@@ -1,0 +1,31 @@
+Zdroje: Krajské hygienické stanice,,Data jsou na druhém listu
+,,
+Aktualizaci provedl,Šablatura,
+Poslední aktualizace,29.5.2020 3:15:20,
+Nyní,30.5.2020 0:28:10,
+,,
+Kraj,URL,Kde jsou na webu počty potvrzených nakažených po okresech
+Jihočeský kraj,http://www.khscb.cz,Řádky v pravé části bloku „Aktuální situace k výskytu koronaviru v Jihočeském kraji“ na titulní straně
+Jihomoravský kraj,http://www.khsbrno.cz/,Odkaz na PDF v sekci „Důležité“ na titulní straně
+Karlovarský kraj,http://www.khskv.cz/COVID19.htm,PDF pod odkazem Počet testovaných osob na COVID-19...
+Kraj Vysočina,http://www.khsjih.cz/covid-19.php,Přímo na této stránce
+Královéhradecký kraj,http://www.khshk.cz/,Tabulka „Nový koronavirus“ na titulní straně webu
+Liberecký kraj,http://www.khslbc.cz/,Tabulka hned na titulní straně webu
+Moravskoslezský kraj,http://www.khsova.cz/,Mapa-obrázek: sečíst hodnoty u modrých a červených bodů
+Olomoucký kraj,http://www.khsolc.cz/info_verejnost.aspx,Tabulka na stránce
+Pardubický kraj,https://www.khspce.cz/aktualni-situace-ve-vyskytu-koronaviru-v-pardubickem-kraji-2/,Údaje na stránce
+Plzeňský kraj,http://www.khsplzen.cz/,"Mapa-obrázek na titulní straně: chybí datum aktualizace, takže porovnat s předchozími čísly"
+Praha,http://www.hygpraha.cz/,"Odkaz někde nahoře na titulní straně, požadované číslo bývá hned v textu odkazu"
+Středočeský kraj,http://www.khsstc.cz/,Mapa-obrázek pod odkazem „Aktuální situace ve výskytu koronaviru ve Středočeském kraji“
+Ústecký kraj,http://www.khsusti.cz/,PDF pod odkazem „Aktuální situace ve výskytu koronaviru v Ústeckém kraji“ nahoře na titulní straně
+Zlínský kraj,http://www.khszlin.cz/,PDF „Informace o výskytu koronaviru ve Zlínském kraji“ v sekci Aktuality na titulní straně
+,,
+Každý den doplňuji na list Data počty známých nakažených v jednotlivých okresech,,
+"Beru počty, které krajské hygienické stanice hlásí k 18. hodině",,
+"Tabulku doplňuji buď ještě v noci, nebo ráno kolem 9. hodiny",,
+,,
+Na list Test crawl se vkládají data zjištěná crawlerem https://github.com/lynt-smitka/khs-crawler,,
+"Z něj ručně kopíruji obsah posledního sloupce do finálního listu Data, všechny údaje ještě kontroluji a doplňuji",,
+,,
+"Tyto počty z KHS jsou verifikované, tedy trochu nižší, než standardně zveřejňuje Ministerstvo zdravotnictví",,
+Na oficiálním webu https://onemocneni-aktualne.mzcr.cz/covid-19 jsou souhrnně v Sekci 2,,
