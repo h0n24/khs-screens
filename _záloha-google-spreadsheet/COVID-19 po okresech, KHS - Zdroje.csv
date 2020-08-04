@@ -1,8 +1,8 @@
 Zdroje: Krajské hygienické stanice,,Data jsou na druhém listu
 ,,
 Aktualizaci provedl,Šablatura,
-Poslední aktualizace,29.5.2020 3:15:20,
-Nyní,30.5.2020 0:28:10,
+Poslední aktualizace,5.8.2020 0:50:32,
+Nyní,5.8.2020 0:51:07,
 ,,
 Kraj,URL,Kde jsou na webu počty potvrzených nakažených po okresech
 Jihočeský kraj,http://www.khscb.cz,Řádky v pravé části bloku „Aktuální situace k výskytu koronaviru v Jihočeském kraji“ na titulní straně
@@ -29,3 +29,5 @@ Na list Test crawl se vkládají data zjištěná crawlerem https://github.com/l
 ,,
 "Tyto počty z KHS jsou verifikované, tedy trochu nižší, než standardně zveřejňuje Ministerstvo zdravotnictví",,
 Na oficiálním webu https://onemocneni-aktualne.mzcr.cz/covid-19 jsou souhrnně v Sekci 2,,
+,,
+Záloha dat pro případnou kontrolu chyb: https://github.com/h0n24/khs-screens,,
