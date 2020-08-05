@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const save = require('./_save');
 
 module.exports = function () {
   (async () => {
@@ -22,27 +23,25 @@ module.exports = function () {
 
     let preparedData = [];
 
-    console.log(data);
-
     for (let index = 0; index < data.features.length; index++) {
       const nazev = data.features[index].attributes.nazev;
       const pozitivni = data.features[index].attributes.PocetPripadu;
-      const vyleceni = data.features[index].attributes.PocetVylecenych;
-      const umrti = data.features[index].attributes.PocetZemrelych;
+      const vyleceni = data.features[index].attributes.pocetVylecenych;
+      const umrti = data.features[index].attributes.pocetZemrelych;
       const obyvatel = data.features[index].attributes.PocetObyvatel;
 
-      console.log(nazev);
-      // for (var okres in obyvatelstvo) {
-      //   if (obyvatelstvo.hasOwnProperty(okres)) {
-      //     console.log(okres);
-      //     console.log(obyvatelstvo[okres]);
+      for (var okres in obyvatelstvo) {
+        if (obyvatelstvo.hasOwnProperty(okres)) {
 
-      //     const obyvatel = obyvatelstvo[okres];
-
-      //     preparedData.push([okres, pozitivni, vyleceni, umrti, obyvatel]);
-      //   }
-      // }
+          if (okres === nazev) {            
+            // const obyvatel = obyvatelstvo[okres];
+            preparedData.push([okres, pozitivni, vyleceni, umrti, obyvatel]);
+          }
+        }
+      }
     }
+
+    save('out/data.json', {"12":preparedData});
   
     await browser.close();
   })();

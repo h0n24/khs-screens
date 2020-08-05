@@ -5,7 +5,7 @@ fs.writeFileSync('out/errors.json', "[]");
 // model dat:
 // okres - případů - vyléčených - zemřelých - obyvatel
 
-// require("./khs/01-khscb")();
+require("./khs/01-khscb")();
 // require("./khs/02-khsbrno")();
 require("./khs/03-khskv")();
 // require("./khs/04-khsjih")();
@@ -16,6 +16,6 @@ require("./khs/03-khskv")();
 // require("./khs/09-khspce")();
 // require("./khs/10-khsplzen")();
 // require("./khs/11-hygpraha")();
-// require("./khs/12-khsstc")();
+require("./khs/12-khsstc")();
 // require("./khs/13-khsusti")();
 // require("./khs/14-khszlin")();
