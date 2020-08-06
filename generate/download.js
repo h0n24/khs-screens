@@ -21,7 +21,4 @@ require("./khs/13-khsusti")();
 require("./khs/14-khszlin")(); //🎴📷
 
 // todo
-// seřadit středočeský kraj dle tabulky
-
-// todo
 // exposeFunction pro clean
