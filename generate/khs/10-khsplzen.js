@@ -4,7 +4,7 @@ module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.setViewport({ width: 1200, height: 2000});
+    await page.setViewport({ width: 1200, height: 2400});
     await page.goto('https://www.khsplzen.cz/', {waitUntil: 'networkidle2'});
 
     await page.evaluate( () => {

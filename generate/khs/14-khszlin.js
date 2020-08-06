@@ -21,8 +21,7 @@ module.exports = function () {
       }
     });
     
-
-    console.log(url);
+    // console.log(url);
 
     const file = fs.createWriteStream("out/14-khszlin.pdf");
     const request = http.get(url, function (response) {
