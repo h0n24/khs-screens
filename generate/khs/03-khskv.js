@@ -34,17 +34,16 @@ module.exports = function () {
     });
 
     let preparedData = [];
-
-    for (let index = 0; index < data.features.length; index++) {
-      const nazev = data.features[index].attributes.nazev;
-      const pozitivni = data.features[index].attributes.PocetPripadu;
-      const vyleceni = data.features[index].attributes.pocetVylecenych;
-      const umrti = data.features[index].attributes.pocetZemrelych;
-      const aktivni = pozitivni - vyleceni - umrti;
-      const obyvatel = data.features[index].attributes.PocetObyvatel;
-
-      for (var okres in obyvatelstvo) {
-        if (obyvatelstvo.hasOwnProperty(okres)) {
+    
+    for (var okres in obyvatelstvo) {
+      if (obyvatelstvo.hasOwnProperty(okres)) {
+        for (let index = 0; index < data.features.length; index++) {
+          const nazev = data.features[index].attributes.nazev;
+          const pozitivni = data.features[index].attributes.PocetPripadu;
+          const vyleceni = data.features[index].attributes.pocetVylecenych;
+          const umrti = data.features[index].attributes.pocetZemrelych;
+          const aktivni = pozitivni - vyleceni - umrti;
+          const obyvatel = data.features[index].attributes.PocetObyvatel;
 
           if (okres === nazev) {
             // const obyvatel = obyvatelstvo[okres];

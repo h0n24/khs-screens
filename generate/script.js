@@ -1,6 +1,6 @@
 const fs = require('fs');
 fs.writeFileSync('out/data.json', "[]");
-fs.writeFileSync('out/errors.json', "[]");
+// fs.writeFileSync('out/errors.json', "[]");
 
 // model dat:
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
@@ -19,6 +19,9 @@ require("./khs/11-hygpraha")();
 require("./khs/12-khsstc")();
 require("./khs/13-khsusti")();
 require("./khs/14-khszlin")(); //🎴📷
+
+// todo
+// seřadit středočeský kraj dle tabulky
 
 // todo
 // exposeFunction pro clean
