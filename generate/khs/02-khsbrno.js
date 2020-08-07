@@ -34,7 +34,10 @@ module.exports = function () {
 
         let link = arr[i].querySelector("a");
 
-        if (link.innerHTML.includes('Aktuální epidemiologická situace v Jihomoravském kraji - COVID-19')) {
+        // možné modifikace odkazů:
+        // Aktuální epid. situace v Jihomoravském kraji - COVID-19
+        // Aktuální epidemiologická situace v Jihomoravském kraji - COVID-19
+        if (link.innerHTML.includes('situace v Jihomoravském kraji - COVID-19')) {
           return link.href;
         }
       }

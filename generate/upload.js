@@ -84,10 +84,15 @@ let bezOkresu = [];
 
 for (let rowIndex = 0; rowIndex < readData.length; rowIndex++) {
   const row = readData[rowIndex];
-  for (let colIndex = 0; colIndex < row.length; colIndex++) {
-    const col = row[colIndex];
-    const colBezOkresu = col.slice(1);
-    bezOkresu.push(colBezOkresu);
+
+  try {
+    for (let colIndex = 0; colIndex < row.length; colIndex++) {
+      const col = row[colIndex];
+      const colBezOkresu = col.slice(1);
+      bezOkresu.push(colBezOkresu);
+    }
+  } catch (error) {
+    console.log(`Okres s pořadovým číslem ${rowIndex+1} se nenačetl. Pravděpodobně chybí data v json.`);
   }
 }
 
