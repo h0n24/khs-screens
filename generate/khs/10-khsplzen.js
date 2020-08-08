@@ -1,4 +1,6 @@
 const puppeteer = require('puppeteer');
+const https = require('https');
+const fs = require('fs');
 
 const save = require('./_save');
 
@@ -15,6 +17,20 @@ module.exports = function () {
     });
 
     await page.screenshot({path: 'out/10-khsplzen.png'});
+
+    const file = fs.createWriteStream("out/10-khsplzen-ocr.png");
+    const request = https.get("https://www.khsplzen.cz/images/KHS/covid19/Plzensky_kraj.jpg", function (response) {
+      response.pipe(file);
+    });
+
+    file.on('finish', function () {
+      // console.log("finished");
+      onOcrFileDownloaded();
+    });
+
+    function onOcrFileDownloaded() {
+      
+    }
 
     // zpracování dat
     const obyvatelstvo = {
