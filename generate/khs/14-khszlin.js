@@ -10,8 +10,8 @@ module.exports = function () {
     const page = await browser.newPage();
     await page.setViewport({ width: 1000, height: 1000});
     await page.goto('http://www.khszlin.cz/', {waitUntil: 'networkidle2'});
-    // await page.screenshot({path: 'out/14-khszlin.png'});
 
+    // hledání url s pdf (každý den se URL mění)
     const url = await page.evaluate(() => {
       let names = document.querySelectorAll('.pdf');
       let arr = Array.prototype.slice.call(names);
@@ -22,11 +22,8 @@ module.exports = function () {
         }
       }
     });
-    
-    // console.log(url);
 
     // ukládání pdf
-
     const file = fs.createWriteStream("out/14-khszlin.pdf");
     const request = http.get(url, function (response) {
       response.pipe(file);

@@ -1,11 +1,10 @@
 const puppeteer = require('puppeteer');
 const https = require('https');
 const fs = require('fs');
+const { createWorker, createScheduler } = require('tesseract.js');
+const sharp = require('sharp');
 
 const save = require('./_save');
-
-
-const sharp = require('sharp');
 
 const OCRpozice = {
     "1-c": [116, 282, 55, 36],
@@ -67,10 +66,17 @@ function generateOCRimage(crop, saveToFile) {
 }
 
 function generateOCRimages() {
+
+  // zkontroluje jestli složka existuje
+  var dir = 'ocr/khsplzen/';
+  if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir);
+  }
+
   for (const pozice in OCRpozice) {
     if (OCRpozice.hasOwnProperty(pozice)) {
       const crop = OCRpozice[pozice];
-      const saveToFile = `ocr/${pozice}.png`;
+      const saveToFile = `ocr/khsplzen/${pozice}.png`;
       generateOCRimage(crop, saveToFile);
     }
   }
@@ -84,8 +90,6 @@ function generateOCRimages() {
 }
 
 // --- Recognize přes tesseract ------------------------------------------------
-
-const { createWorker, createScheduler } = require('tesseract.js');
 
 function recognizeOCRimages(params) {
   const scheduler = createScheduler();
@@ -133,7 +137,7 @@ function recognizeOCRimages(params) {
           const number = parseInt(text, 10);
 
           let [ okres, sub ] = key.split("-");
-          [,okres] = okres.split("/");
+          [,okres] = okres.split("/khsplzen/");
           [sub,] = sub.split(".");
   
           if (OCRjson[okres] === undefined) {
@@ -145,7 +149,7 @@ function recognizeOCRimages(params) {
       }
     }
 
-    generateOCRjson()
+    generateOCRjson();
 
     await scheduler.terminate(); // It also terminates all workers.
   })();
@@ -221,14 +225,14 @@ module.exports = function () {
 
     await page.screenshot({path: 'out/10-khsplzen.png'});
 
+    // stažení verze pro OCR 
     const file = fs.createWriteStream("out/10-khsplzen-ocr.png");
     const request = https.get("https://www.khsplzen.cz/images/KHS/covid19/Plzensky_kraj.jpg", function (response) {
       response.pipe(file);
     });
 
     file.on('finish', function () {
-      // console.log("finished");
-      // inicializace
+      // inicializace -> příprava OCR, čtení, generování JSONu
       generateOCRimages();
     });
   
