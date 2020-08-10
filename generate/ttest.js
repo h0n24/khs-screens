@@ -126,16 +126,20 @@ function recognizeOCRimages(params) {
         const {
           text
         } = await OCRpromise.then(result => result.data);
-        const number = parseInt(text, 10);
 
-        let [ okres, sub ] = key.split("-");
-        [,okres] = okres.split("/");
-        [sub,] = sub.split(".");
+        if (text !== "") {
+          const number = parseInt(text, 10);
 
-        if (OCRjson[okres] === undefined) {
-          OCRjson[okres] = [];
+          let [ okres, sub ] = key.split("-");
+          [,okres] = okres.split("/");
+          [sub,] = sub.split(".");
+  
+          if (OCRjson[okres] === undefined) {
+            OCRjson[okres] = {};
+          }
+          
+          OCRjson[okres][sub] = number;
         }
-        OCRjson[okres].push({[sub]: number});
       }
     }
     console.log(OCRjson);
