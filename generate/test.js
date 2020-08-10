@@ -35,8 +35,11 @@
 //     // this.pack().pipe(fs.createWriteStream('result.png'));
 // });
 
-const sharp = require('sharp');
 // const Tesseract = require('tesseract.js');
+
+// =============================================================================
+
+const sharp = require('sharp');
 
 const OCRpozice = {
     "1-c": [116, 282, 55, 36],
@@ -91,32 +94,35 @@ for (const pozice in OCRpozice) {
     }
 }
 
+// =============================================================================
 
 
-// import { createWorker } from 'tesseract.js';
-const { createWorker } = require('tesseract.js');
 
-const worker = createWorker({
-  logger: m => console.log(m)
-});
+// // import { createWorker } from 'tesseract.js';
+// const { createWorker } = require('tesseract.js');
 
-(async () => {
-  await worker.load();
-  await worker.loadLanguage('eng');
-  await worker.initialize('eng');
-  const { data: { text } } = await worker.recognize(OCRurl[0]);
-  console.log(text);
-  await worker.terminate();
-})();
+// const worker = createWorker({
+//   logger: m => console.log(m)
+// });
 
-(async () => {
-    await worker.load();
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    const { data: { text2 } } = await worker.recognize(OCRurl[1]);
-    console.log(text2);
-    await worker.terminate();
-  })();
+// (async () => {
+//   await worker.load();
+//   await worker.loadLanguage('eng');
+//   await worker.initialize('eng');
+//   const { data: { text } } = await worker.recognize(OCRurl[0]);
+//   console.log("hello",text);
+//   await worker.terminate();
+// })();
+
+// (async () => {
+//     const test = 4;
+//     await worker.load();
+//     await worker.loadLanguage('eng');
+//     await worker.initialize('eng');
+//     const { data: { text2 } } = await worker.recognize(OCRurl[test]);
+//     console.log(`${OCRurl[test]} ${text2}`);
+//     await worker.terminate();
+//   })();
 
 
 // const { createWorker, createScheduler } = require('tesseract.js');
@@ -177,6 +183,10 @@ const worker = createWorker({
 
 
 
+// const Tesseract = require('tesseract.js');
+
+// OCRtesseract(OCRurl[1]);
+
 // function OCRtesseract(OCRfile) {
 //     console.log(OCRfile);
 //     Tesseract.recognize(
@@ -188,7 +198,7 @@ const worker = createWorker({
 //             text
 //         }
 //     }) => {
-//         console.log(text);
+//         console.log(OCRfile, ":", text);
 //     })
 // }
 
