@@ -18,7 +18,7 @@ require("./khs/10-khsplzen")();
 require("./khs/11-hygpraha")();
 require("./khs/12-khsstc")();
 require("./khs/13-khsusti")();
-require("./khs/14-khszlin")(); //🎴📷
+require("./khs/14-khszlin")();
 
 // todo
 // exposeFunction pro clean
