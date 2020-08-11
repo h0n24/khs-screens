@@ -202,7 +202,6 @@ function generateOCRjson(params) {
   save('out/data.json', {
     "14": preparedData
   });
-
 }
 
 module.exports = function () {

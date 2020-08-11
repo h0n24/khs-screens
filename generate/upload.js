@@ -102,7 +102,12 @@ const dateFull = dateObj.toISOString();
 const [dateShort, ] = dateFull.split("T");
 
 const hours = dateObj.getHours();
-const minutes = dateObj.getMinutes();
+let minutes = dateObj.getMinutes();
+
+if (minutes < 10) {
+  minutes = `0${minutes}`
+}
+
 const timeString = `Aktualizace v ${hours}:${minutes}`
 
 /**
