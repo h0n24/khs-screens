@@ -88,10 +88,10 @@ function recognizeOCRimages(params) {
     await worker2.load();
 
     // bylo původně eng
-    await worker1.loadLanguage('digits');
-    await worker2.loadLanguage('digits');
-    await worker1.initialize('digits');
-    await worker2.initialize('digits');
+    await worker1.loadLanguage('digits-zlin');
+    await worker2.loadLanguage('digits-zlin');
+    await worker1.initialize('digits-zlin');
+    await worker2.initialize('digits-zlin');
 
     const workerParameters = {
       tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",

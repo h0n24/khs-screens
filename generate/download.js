@@ -1,3 +1,11 @@
+process.setMaxListeners(0);
+process.on('uncaughtException', errorHappened);
+
+function errorHappened(arg) {
+  console.log(`Houston we have an error: ${arg}`)
+}
+
+// smazat předchozí data
 const fs = require('fs');
 fs.writeFileSync('out/data.json', "[]");
 // fs.writeFileSync('out/errors.json', "[]");

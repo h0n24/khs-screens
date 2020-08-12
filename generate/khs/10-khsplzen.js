@@ -105,10 +105,10 @@ function recognizeOCRimages(params) {
     await worker2.load();
 
     // bylo původně eng
-    await worker1.loadLanguage('digits');
-    await worker2.loadLanguage('digits');
-    await worker1.initialize('digits');
-    await worker2.initialize('digits');
+    await worker1.loadLanguage('digits-plzen');
+    await worker2.loadLanguage('digits-plzen');
+    await worker1.initialize('digits-plzen');
+    await worker2.initialize('digits-plzen');
 
     const workerParameters = {
       tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
