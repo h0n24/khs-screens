@@ -1,8 +1,8 @@
 Zdroje: Krajské hygienické stanice,,Data jsou na druhém listu
 ,,
 Aktualizaci provedl,Šablatura,
-Poslední aktualizace,5.8.2020 0:50:32,
-Nyní,5.8.2020 0:51:07,
+Poslední aktualizace,12.8.2020 0:09:25,
+Nyní,12.8.2020 14:38:18,
 ,,
 Kraj,URL,Kde jsou na webu počty potvrzených nakažených po okresech
 Jihočeský kraj,http://www.khscb.cz,Řádky v pravé části bloku „Aktuální situace k výskytu koronaviru v Jihočeském kraji“ na titulní straně
@@ -24,8 +24,8 @@ Každý den doplňuji na list Data počty známých nakažených v jednotlivých
 "Beru počty, které krajské hygienické stanice hlásí k 18. hodině",,
 "Tabulku doplňuji buď ještě v noci, nebo ráno kolem 9. hodiny",,
 ,,
-Na list Test crawl se vkládají data zjištěná crawlerem https://github.com/lynt-smitka/khs-crawler,,
-"Z něj ručně kopíruji obsah posledního sloupce do finálního listu Data, všechny údaje ještě kontroluji a doplňuji",,
+"Na list Crawl: dnes se vkládají data vygenerovaná přes generate crawler, zdroják: https://github.com/h0n24/khs-screens ",,
+"Z něj ručně kopíruji obsah posledního sloupce do datových sloupců, ve sloupci Data jsou kumulativní údaje nakažených, všechny údaje ještě kontroluji a doplňuji",,
 ,,
 "Tyto počty z KHS jsou verifikované, tedy trochu nižší, než standardně zveřejňuje Ministerstvo zdravotnictví",,
 Na oficiálním webu https://onemocneni-aktualne.mzcr.cz/covid-19 jsou souhrnně v Sekci 2,,
