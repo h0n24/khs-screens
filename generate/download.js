@@ -8,6 +8,7 @@ function errorHappened(arg) {
 // smazat předchozí data
 const fs = require('fs');
 fs.writeFileSync('out/data.json', "[]");
+fs.writeFileSync('out/time.json', "[]");
 // fs.writeFileSync('out/errors.json', "[]");
 
 // model dat:

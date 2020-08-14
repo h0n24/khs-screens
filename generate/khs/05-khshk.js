@@ -10,7 +10,7 @@ module.exports = function () {
       width: 1000,
       height: 2600
     });
-    await page.goto('http://www.khshk.cz/news.php', {
+    await page.goto('http://www.khshk.cz/articles.php?article_id=2030', {
       waitUntil: 'networkidle2'
     });
 
@@ -34,12 +34,13 @@ module.exports = function () {
       for (let i = 0; i < arr.length; i += 1) {
 
         try {
-          let title = arr[i].querySelectorAll("tr td span");
+          const title = arr[i].querySelectorAll("tr td span");
 
           if (title[0] !== undefined) {
-            title = title[0].innerHTML;
+            const testTitleOriginal = title[0].innerHTML.replace(/\s/g,'');
+            const testTitleTested = 'Královéhradecký kraj - COVID-19'.replace(/\s/g,'');
 
-            if (title.includes('Královéhradecký kraj - COVID-19')) {
+            if (testTitleOriginal.includes(testTitleTested)) {
 
               let rows = arr[i].querySelectorAll("tr");
 
@@ -59,7 +60,6 @@ module.exports = function () {
                 } catch (error) {
 
                 }
-
               }
 
               return preparedArray;
@@ -71,7 +71,38 @@ module.exports = function () {
       }
     });
 
-    // zpracování dat
+    // crawlování času
+    const crawledTime = await page.evaluate(() => {
+      let tables = document.querySelectorAll("table");
+      let arr = Array.prototype.slice.call(tables);
+      let preparedTime;
+
+      for (let i = 0; i < arr.length; i += 1) {
+
+        try {
+          const title = arr[i].querySelectorAll("tr td span");
+
+          if (title[0] !== undefined) {
+
+            const testTimeOriginal = title[1].innerHTML.replace(/\s/g,'');
+            const testTimeTested = "Situace k ".replace(/\s/g,'');
+
+            if (testTimeOriginal.includes(testTimeTested)) {
+              preparedTime = title[1].innerHTML;
+              preparedTime = preparedTime.replace("Situace k", "");
+              preparedTime = preparedTime.replace("hodin*", "");
+              preparedTime = preparedTime.trim();
+
+              return preparedTime;
+            }
+          }
+        } catch (error) {
+
+        }
+      }
+    });
+
+    // zpracování dat -------------------------------------------------------
     const obyvatelstvo = {
       "Hradec Králové": 164283,
       "Jičín": 80045,
@@ -98,6 +129,30 @@ module.exports = function () {
 
     save('out/data.json', {
       "05": preparedData
+    });
+
+    // zpracování času -------------------------------------------------------
+    // příklad vstupu: 14.8.2020, 15:45
+
+    let dateTime = crawledTime;
+    let [date, time] = dateTime.split(",");
+
+    let [den, mesic, rok] = date.split(".");
+    den = parseInt(den, 10);
+    mesic = parseInt(mesic, 10);
+    rok = parseInt(rok, 10);
+
+    mesic < 9 ? mesic = `0${mesic}` : mesic;
+    den < 9 ? den = `0${den}` : den;
+
+    date = `${rok}-${mesic}-${den}`;
+    dateTime = `${date} ${time}`;
+    let ISODate = new Date(dateTime).toISOString();
+
+    // console.log(ISODate);
+
+    save('out/time.json', {
+      "05": ISODate
     });
 
     await browser.close();
