@@ -8,15 +8,66 @@ const sharp = require('sharp');
 const save = require('./_save');
 
 const OCRpozice = {
-  "1": [161, 532, 120, 305],
-  "2": [290, 532, 120, 305],
-  "3": [420, 532, 120, 305],
-  "4": [551, 532, 120, 305],
+  "1": [155, 476, 120, 305],
+  "2": [290, 476, 120, 305],
+  "3": [425, 476, 120, 305],
+  "4": [560, 476, 120, 305],
 }
 
 let OCRurl = [];
 let sharpPromises = [];
 let OCRjson = {};
+
+// --- Převod z pdf na obrázek -------------------------------------------------
+function prepareOCRimage() {
+  (async () => {
+
+    // pro účely převodu pdf na obrázek je třeba vytvořit server
+    var express = require('express');
+    var http = require('http');
+
+    var app = express();
+    var serv = http.createServer(app);
+
+    app.use('/', express.static('./'));
+
+    app.get('/close', function (req, res) {
+      res.send("CLOSING");
+      serv.close();
+    });
+
+    serv.listen(8771, function () {
+      // console.log("server starting");
+    });
+
+    // puppeteer crawluje tento server, aby přes připravený pdf-reader vytvořil screenshot, bohužel pro windows neexistuje žádná stabilnější knihovna, která by převáděla pdf na png
+    const browser2 = await puppeteer.launch();
+    const page2 = await browser2.newPage();
+    await page2.setViewport({
+      width: 820,
+      height: 1200
+    });
+    await page2.goto(`http://localhost:8771/other/pdf-reader/web/?file=../../../out/14-khszlin.pdf`, {
+      waitUntil: 'networkidle2'
+    });
+
+    // screenshot pro OCR
+    await page2.screenshot({
+      path: 'out/14-khszlin-ocr.png'
+    });
+
+    // vypnutí serveru po převodu z pdf na obrázek
+    await page2.goto(`http://localhost:8771/close/`, {
+      waitUntil: 'networkidle2'
+    });
+
+    // začátek ocr, přípravy + čtení přes tesseract
+    generateOCRimages();
+
+    await browser2.close();
+
+  })();
+}
 
 // --- Příprava obrázků (černobílé, ořezy, apod.) ------------------------------
 
@@ -208,6 +259,8 @@ module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    // Vyhledání pdf souboru (url se každý den mění)
     await page.setViewport({ width: 1000, height: 1000});
     await page.goto('http://www.khszlin.cz/', {waitUntil: 'networkidle2'});
 
@@ -223,22 +276,12 @@ module.exports = function () {
       }
     });
 
-    const page2 = await browser.newPage();
-    await page2.setViewport({ width: 820, height: 1200});
-    await page2.goto(`https://docs.google.com/viewer?url=${url}`, {waitUntil: 'networkidle2'});
-
-    // screenshot pro OCR
-    await page2.screenshot({
-      path: 'out/14-khszlin-ocr.png'
-    });
-
-    // začátek ocr, přípravy + čtení přes tesseract
-    generateOCRimages(); 
-
-    // ukládání pdf
+    // ukládání pdf -> generování obrázku
     const file = fs.createWriteStream("out/14-khszlin.pdf");
     const request = http.get(url, function (response) {
       response.pipe(file);
+
+      prepareOCRimage();
     });
   
     await browser.close();

@@ -1,0 +1,25 @@
+{
+   "name": "khs-screens-crawler",
+   "description": "Repository works as a crawler for all Czech regional hygienic station's daily data about COVID-19 illness with an additional screenshot generator used as a backup.",
+   "version": "1.0.0",
+   "dependencies": {
+      "express": "^4.17.1",
+      "gm": "^1.23.1",
+      "http-terminator": "^2.0.3",
+      "pdf-image": "^2.0.0",
+      "pdfreader": "^1.0.7",
+      "puppeteer": "^5.2.1",
+      "sharp": "^0.25.4",
+      "tesseract.js": "^2.1.1"
+   },
+   "repository": {
+      "type": "git",
+      "url": "git://github.com/h0n24/khs-screens/repository.git"
+   },
+   "license": "BSD-3-Clause",
+   "author": {
+      "name": "Jan Šablatura",
+      "email": "jan@sablatura.info",
+      "url": "https://www.sablatura.info/"
+   }
+}
