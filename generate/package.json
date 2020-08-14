@@ -4,9 +4,7 @@
    "version": "1.0.0",
    "dependencies": {
       "express": "^4.17.1",
-      "gm": "^1.23.1",
-      "http-terminator": "^2.0.3",
-      "pdf-image": "^2.0.0",
+      "googleapis": "^39.2.0",
       "pdfreader": "^1.0.7",
       "puppeteer": "^5.2.1",
       "sharp": "^0.25.4",
