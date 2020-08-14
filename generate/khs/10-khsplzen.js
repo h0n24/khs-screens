@@ -215,15 +215,60 @@ module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.setViewport({ width: 1200, height: 2400});
+
+    await page.setViewport({ width: 1200, height: 2700});
     await page.goto('https://www.khsplzen.cz/', {waitUntil: 'networkidle2'});
 
-    // screenshot
-    await page.evaluate( () => {
-      window.scrollBy(0, 400);
+    // úprava css - očištění od nesmyslů
+    await page.evaluate(async () => {
+      const style = document.createElement('style');
+      style.type = 'text/css';
+      const content = `
+        #art-main, .art-post {
+          background: #FFF !important;
+        }
+        .art-post {
+          border: none !important;
+          box-shadow: none !important;
+        }
+        td {
+          border: none !important;
+        }
+        iframe {
+          display:none;
+        }
+        img[src="/images/KHS/covid19/Jak_chránit_sebe_a_své_okolí.png"] {
+          display:none;
+        }
+        img[src="/images/banners/infolinky-SZU-TRI-linky-1-s.jpg"] {
+          display: none;
+        }
+        img[src="/images/banners/inforlinky-pojistoven-s.png"] {
+          display: none;
+        }
+        img[src="/images/MZCR/Prevence-koronavirus.png"] {
+          display: none;
+        }
+      `;
+      style.appendChild(document.createTextNode(content));
+      const promise = new Promise((resolve, reject) => {
+        style.onload = resolve;
+        style.onerror = reject;
+      });
+      document.head.appendChild(style);
+      await promise;
     });
 
-    await page.screenshot({path: 'out/10-khsplzen.png'});
+    // screenshot
+    await page.screenshot({
+      path: 'out/10-khsplzen.png',
+      clip: {
+        x: 70,
+        y: 800,
+        width: 1080,
+        height: 1800
+      }
+    });
 
     // stažení verze pro OCR 
     const file = fs.createWriteStream("out/10-khsplzen-ocr.png");

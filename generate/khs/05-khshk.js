@@ -19,9 +19,9 @@ module.exports = function () {
       path: 'out/05-khshk.png',
       clip: {
         x: 220,
-        y: 1375,
+        y: 375,
         width: 710,
-        height: 1180
+        height: 780
       }
     });
 
