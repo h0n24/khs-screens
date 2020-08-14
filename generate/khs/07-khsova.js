@@ -215,10 +215,10 @@ module.exports = function () {
       waitUntil: 'networkidle2'
     });
 
-    // screenshot
-    await page.screenshot({
-      path: 'out/07-khsova.png'
-    });
+    // screenshot -> nahrazen OCR
+    // await page.screenshot({
+    //   path: 'out/07-khsova.png'
+    // });
 
     // hledání url s obrázkem (každý den se URL mění)
     const url = await page.evaluate(() => {

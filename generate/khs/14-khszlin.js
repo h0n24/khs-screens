@@ -48,7 +48,7 @@ function prepareOCRimage() {
       height: 1200
     });
     await page2.goto(`http://localhost:8771/other/pdf-reader/web/?file=../../../out/14-khszlin.pdf`, {
-      waitUntil: 'networkidle2'
+      waitUntil: 'networkidle0'
     });
 
     // screenshot pro OCR

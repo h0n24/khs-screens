@@ -15,7 +15,13 @@ module.exports = function () {
 
     // screenshot
     await page.screenshot({
-      path: 'out/09-khspce.png'
+      path: 'out/09-khspce.png',
+      clip: {
+        x: 0,
+        y: 150,
+        width: 740,
+        height: 650
+      }
     });
 
     // crawlování dat

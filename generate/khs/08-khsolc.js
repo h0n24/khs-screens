@@ -13,9 +13,38 @@ module.exports = function () {
       waitUntil: 'networkidle2'
     });
 
+    
+
+    // úprava css - očištění od nesmyslů
+    await page.evaluate(async () => {
+      const style = document.createElement('style');
+      style.type = 'text/css';
+      const content = `
+        #hlavnipanel-obsah {
+          background: #FFF !important;
+        }
+        img[src="images/logo_graf.png"] {
+          display: none !important;
+        }
+      `;
+      style.appendChild(document.createTextNode(content));
+      const promise = new Promise((resolve, reject) => {
+        style.onload = resolve;
+        style.onerror = reject;
+      });
+      document.head.appendChild(style);
+      await promise;
+    });
+
     // screenshot
     await page.screenshot({
-      path: 'out/08-khsolc.png'
+      path: 'out/08-khsolc.png',
+      clip: {
+        x: 210,
+        y: 140,
+        width: 680,
+        height: 450
+      }
     });
 
     // crawlování dat

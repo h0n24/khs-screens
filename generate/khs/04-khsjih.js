@@ -15,7 +15,13 @@ module.exports = function () {
 
     // screenshot
     await page.screenshot({
-      path: 'out/04-khsjih.png'
+      path: 'out/04-khsjih.png',
+      clip: {
+        x: 200,
+        y: 120,
+        width: 600,
+        height: 630
+      }
     });
 
     // crawlování dat
