@@ -35,3 +35,5 @@ require("./khs/14-khszlin")();
 
 // todo
 // exposeFunction pro clean
+// puppeteer - tor
+// pardubice evidují počty nakažených a mrtvých

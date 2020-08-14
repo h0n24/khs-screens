@@ -92,7 +92,20 @@ for (let rowIndex = 0; rowIndex < readData.length; rowIndex++) {
       bezOkresu.push(colBezOkresu);
     }
   } catch (error) {
-    console.log(`Okres s pořadovým číslem ${rowIndex+1} se nenačetl. Pravděpodobně chybí data v json.`);
+    console.log(`Okres s pořadovým číslem ${rowIndex+1} se nenačetl protože chybí data v json.`);
+
+    const poctyOkresuNaKraj = [7,7,3,5,5,4,6,5,4,7,1,12,7,4];
+
+    for (let krajIndex = 0; krajIndex < poctyOkresuNaKraj.length; krajIndex++) {
+      const kraj = poctyOkresuNaKraj[krajIndex];
+
+      // přidej volná pole pokud je v daném kraji chyba
+      if (rowIndex === krajIndex) {
+        for (let index = 0; index < kraj; index++) {
+          bezOkresu.push(["", "", "", "", ""]);
+        }
+      }
+    }
   }
 }
 

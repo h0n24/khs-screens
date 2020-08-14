@@ -9,6 +9,7 @@ module.exports = function () {
       width: 990,
       height: 900
     });
+
     await page.goto('https://www.khspce.cz/aktualni-situace-ve-vyskytu-koronaviru-v-pardubickem-kraji-2/', {
       waitUntil: 'networkidle2'
     });
