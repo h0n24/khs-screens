@@ -53,7 +53,7 @@ module.exports = function () {
           if (title[0] !== undefined) {
             title = title[0].innerHTML;
 
-            if (title.includes('Kumulativní celkový počet potvrzených případů onemocnění COVID-19')) {
+            if (title.includes('Kumulativní celkový počet potvrzených případů onemocnění')) {
 
               const rows = arr[i].querySelectorAll("tr");
               const row = rows[1];
