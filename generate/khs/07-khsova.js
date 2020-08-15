@@ -5,7 +5,9 @@ const { createWorker, createScheduler } = require('tesseract.js');
 const sharp = require('sharp');
 
 const save = require('./_save');
+const report = require('./_report');
 
+const khs = "07-khsova";
 
 const OCRpozice = {
   "1-t": [267, 109, 30, 12],
@@ -205,44 +207,53 @@ function generateOCRjson(params) {
 
 module.exports = function () {
   (async () => {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setViewport({
-      width: 1200,
-      height: 850
-    });
-    await page.goto('http://www.khsova.cz/', {
-      waitUntil: 'networkidle2'
-    });
+    const OCRfilePath = "out/07-khsova-ocr.png";
 
-    // screenshot -> nahrazen OCR
-    // await page.screenshot({
-    //   path: 'out/07-khsova.png'
-    // });
+    // někdy se stránka khsova nedá načíst pod méně než 30s,
+    // je tedy dobré manuálně stáhnout slider a vložit ho do složky out
+    // tato část kódu kontroluje, jestli už soubor neexistuje, 
+    // aby mohl přeskočit stahování
+    if (fs.existsSync(OCRfilePath)) {
 
-    // hledání url s obrázkem (každý den se URL mění)
-    const url = await page.evaluate(() => {
-      let images = document.querySelectorAll(".tp-kbimg");
-      let arr = Array.prototype.slice.call(images);
-      for (let i = 0; i < arr.length; i += 1) {
-        if (arr[i].src.includes('www.khsova.cz/sliders/slider_mapa_koronavirus')) {
-          return images[0].src;
-        }
-      }
-    });
-
-    // stažení verze pro OCR 
-    const file = fs.createWriteStream("out/07-khsova-ocr.png");
-    const request = http.get(url, function (response) {
-      response.pipe(file);
-    });
-
-    file.on('finish', function () {
-      // console.log("finished preparing ocr image");
-      // inicializace
+      report(khs, "OCR soubor byl nalezen, přeskakuji stahování");
       generateOCRimages();
-    });
+    } else {
 
-    await browser.close();
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      await page.setViewport({
+        width: 1200,
+        height: 850
+      });
+      await page.goto('http://www.khsova.cz/', {
+        waitUntil: 'networkidle2'
+      });
+  
+      // hledání url s obrázkem (každý den se URL mění)
+      const url = await page.evaluate(() => {
+        let images = document.querySelectorAll(".tp-kbimg");
+        let arr = Array.prototype.slice.call(images);
+        for (let i = 0; i < arr.length; i += 1) {
+          if (arr[i].src.includes('www.khsova.cz/sliders/slider_mapa_koronavirus')) {
+            return images[0].src;
+          }
+        }
+      });
+  
+      // stažení verze pro OCR 
+      const file = fs.createWriteStream(OCRfilePath);
+      const request = http.get(url, function (response) {
+        response.pipe(file);
+      });
+  
+      file.on('finish', function () {
+        // report(khs, "OCR soubor stažen");
+        // inicializace
+        generateOCRimages();
+      });
+  
+      await browser.close();
+    }
   })();
 }
