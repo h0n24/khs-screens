@@ -20,7 +20,7 @@ fs.writeFileSync('out/time.json', "[]");
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
 // jen pro test
-// require("./khs/07-khsova")();
+// require("./khs/03-khskv")();
 // return false;
 
 // jednotlivé scripty pro khs
@@ -47,6 +47,3 @@ require("./khs/14-khszlin")();
 
 // isdown api? - kontrolovat favicony, případně podobně malé části
 // https://api-prod.downfor.cloud/httpcheck/http://www.khsova.cz
-
-// khskv - stahovat přímo json místo obrázku
-// khsstc - stahovat přímo json místo obrázku

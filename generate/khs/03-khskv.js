@@ -1,38 +1,38 @@
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "03-khskv";
 
 module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.setViewport({
-      width: 400,
-      height: 600
-    });
+
     await page.goto('https://services8.arcgis.com/53ZwuSzWkMambPm6/arcgis/rest/services/Po%C4%8Det_onemocn%C4%9Bn%C3%AD_COVID19_v_Karlovarsk%C3%A9m_kraji/FeatureServer/0/query?where=1%3D1&geometryType=esriGeometryEnvelope&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&outFields=kod%2Cnazev%2CPocetPripadu%2CPocetVylecenych%2CPocetZemrelych%2CPocetObyvatel&resultOffset=0&returnGeometry=false&returnZ=false&returnM=false&returnIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&returnTrueCurves=false&returnExtentsOnly=false&f=pjson', {
       waitUntil: 'networkidle2'
     });
 
-    // printscreen
-    await page.evaluate(() => {
-      window.scrollBy(0, 1000);
-    });
-
-    await page.screenshot({
-      path: 'out/03-khskv.png'
-    });
-
-    // parsování dat
+    // příprava dat
     const obyvatelstvo = {
       "Karlovy Vary": 114818,
       "Sokolov": 88212,
       "Cheb": 91634
     };
 
+    // parsování dat
     let data = await page.evaluate(() => {
       return JSON.parse(document.querySelector("body").innerText);
     });
 
+    // uložení jako json
+    const stringData = JSON.stringify(data);
+    const writeStream = fs.createWriteStream(`out/${khs}.json`);
+    writeStream.write(stringData);
+
+    // čištění dat
     let preparedData = [];
     
     for (var okres in obyvatelstvo) {
@@ -56,6 +56,8 @@ module.exports = function () {
     save('out/data.json', {
       "03": preparedData
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();
