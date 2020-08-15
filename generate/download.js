@@ -17,8 +17,9 @@ fs.writeFileSync('out/time.json', "[]");
 // model dat:
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
-require("./khs/11-hygpraha")();
-return false;
+// jen pro test
+// require("./khs/11-hygpraha")();
+// return false;
 
 // jednotlivé scripty pro khs
 require("./khs/01-khscb")();
