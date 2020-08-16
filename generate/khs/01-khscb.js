@@ -1,16 +1,23 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
+
 const save = require('./_save');
 const clean = require('./_clean');
+const report = require('./_report');
+
+const khs = "01-khscb";
 
 module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    // přístup na stránku
     await page.setViewport({
       width: 1000,
       height: 1000
     });
+
     await page.goto('https://www.khscb.cz/view.php?nazevclanku=aktualni-situace-k-vyskytu-koronaviru-v-jihoceskem-kraji&cisloclanku=2009040010', {
       waitUntil: 'networkidle2'
     });
@@ -88,6 +95,8 @@ module.exports = function () {
     save('out/data.json', {
       "01": preparedData
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();

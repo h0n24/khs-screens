@@ -6,6 +6,9 @@ const {
 } = require('pdfreader');
 
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "06-khslbc";
 
 const obyvatelstvo = {
   "Česká Lípa": 103300,
@@ -120,11 +123,36 @@ function parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData) {
 
   // finálně uloží data do souboru
   saveToFile(preparedData);
+
+  report(khs, "OK");
 }
 
 function saveToFile(data) {
   save('out/data.json', {
     "06": data
+  });
+}
+
+function parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData) {
+  new PdfReader().parseFileItems(PDFfilePath, function (err, item) {
+    if (err) {
+      console.error(err);
+    } else if (!item) {
+      /* pdfreader queues up the items in the PDF and passes them to
+       * the callback. When no item is passed, it's indicating that
+       * we're done reading the PDF. */
+      // console.log('Done.');
+      parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData);
+    } else if (item.file) {
+      // File items only reference the PDF's file path.
+      // console.log(`Parsing ${item.file && item.file.path || 'a buffer'}`)
+    } else if (item.page) {
+      // Page items simply contain their page number.
+      // console.log(`Reached page ${item.page}`);
+    } else if (item.text) {
+      // Goes through every item in the pdf file
+      parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal);
+    }
   });
 }
 
@@ -139,73 +167,71 @@ module.exports = function () {
     let preparedData = [];
 
     // screenshot --------------------------------------------------------------
-    await page.setViewport({
-      width: 510,
-      height: 500
-    });
-    await page.goto('http://www.khslbc.cz/', {
-      waitUntil: 'networkidle2'
-    });
+    const SCRfilePath = `out/${khs}.png`;
 
-    // screenshot
-    await page.evaluate(() => {
-      window.scrollBy(240, 1350);
-    });
+    // pokud již soubor existuje, nestahovat znovu, zrychluje proces
+    if (fs.existsSync(SCRfilePath)) {
+      report(khs, "Screenshot byl nalezen, přeskakuji stahování");
+    } else {
+      await page.setViewport({
+        width: 510,
+        height: 1850
+      });
 
-    await page.screenshot({
-      path: 'out/06-khslbc.png'
-    });
+      await page.goto('http://www.khslbc.cz/', {
+        waitUntil: 'networkidle2'
+      });
+
+      await page.evaluate(() => {
+        window.scrollBy(240, 1350);
+      });
+
+      await page.screenshot({
+        path: 'out/06-khslbc.png'
+      });
+    }
 
     // Vyhledání pdf souboru (url se každý den mění) ---------------------------
-    await page.setViewport({
-      width: 1000,
-      height: 1000
-    });
-    await page.goto('https://www.khslbc.cz/khs_informace_covid-19/', {
-      waitUntil: 'networkidle2'
-    });
+    const PDFfilePath = `out/${khs}.pdf`;
+    const urlWithPDF = 'https://www.khslbc.cz/khs_informace_covid-19/';
 
-    // hledání url s pdf (každý den se URL mění)
-    const url = await page.evaluate(() => {
-      let names = document.querySelectorAll('.mtli_pdf');
-      let arr = Array.prototype.slice.call(names);
-      for (let i = 0; i < arr.length; i += 1) {
+    // pokud již soubor existuje, nestahovat znovu, 
+    // zrychluje proces, šetří KHS weby
+    if (fs.existsSync(PDFfilePath)) {
+      report(khs, "PDF soubor byl nalezen, přeskakuji stahování");
+      parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData);
 
-        if (arr[i].innerHTML.includes('Onemocnění COVID-19 v LK dle okresů')) {
-          return arr[i].href;
-        }
-      }
-    });
+    } else {
 
-    // ukládání pdf a parsování pdf --------------------------------------------
-    const file = fs.createWriteStream("out/06-khslbc.pdf");
-    const request = https.get(url, function (response) {
-      response.pipe(file);
+      // přístup na stránku
+      const page2 = await browser.newPage();
+      await page2.goto(urlWithPDF, {
+        waitUntil: 'networkidle2'
+      });
 
-      // After all the data is saved
-      response.on('end', function () {
-        new PdfReader().parseFileItems("out/06-khslbc.pdf", function (err, item) {
-          if (err) {
-            console.error(err);
-          } else if (!item) {
-            /* pdfreader queues up the items in the PDF and passes them to
-             * the callback. When no item is passed, it's indicating that
-             * we're done reading the PDF. */
-            // console.log('Done.');
-            parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData);
-          } else if (item.file) {
-            // File items only reference the PDF's file path.
-            // console.log(`Parsing ${item.file && item.file.path || 'a buffer'}`)
-          } else if (item.page) {
-            // Page items simply contain their page number.
-            // console.log(`Reached page ${item.page}`);
-          } else if (item.text) {
-            // Goes through every item in the pdf file
-            parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal);
+      // hledání url s pdf (každý den se URL mění)
+      const url = await page2.evaluate(() => {
+        let names = document.querySelectorAll('.mtli_pdf');
+        let arr = Array.prototype.slice.call(names);
+        for (let i = 0; i < arr.length; i += 1) {
+
+          if (arr[i].innerHTML.includes('Onemocnění COVID-19 v LK dle okresů')) {
+            return arr[i].href;
           }
+        }
+      });
+
+      // ukládání pdf a parsování pdf --------------------------------------------
+      const file = fs.createWriteStream(PDFfilePath);
+      const request = https.get(url, function (response) {
+        response.pipe(file);
+
+        // After all the data is saved
+        response.on('end', function () {
+          parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData);
         });
       });
-    });
+    }
 
     await browser.close();
   })();

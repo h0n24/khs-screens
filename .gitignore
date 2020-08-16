@@ -2,4 +2,4 @@ generate/node_modules
 generate/credentials.json
 generate/token.json
 generate/out
-generate/ocr
+generate/temp

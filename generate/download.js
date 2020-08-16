@@ -8,7 +8,9 @@ process.setMaxListeners(0);
 process.on('uncaughtException', errorHappened);
 
 function errorHappened(arg) {
-  console.log(`Houston we have an error: ${arg}`)
+  let title = "Error".padEnd(12, ' ');
+  title = `\x1b[31m${title}\x1b[0m`;
+  console.log(title, arg);
 }
 
 // vytvořit základ pro datové js soubory
@@ -20,7 +22,7 @@ fs.writeFileSync('out/time.json', "[]");
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
 // jen pro test
-// require("./khs/03-khskv")();
+// require("./khs/14-khszlin")();
 // return false;
 
 // jednotlivé scripty pro khs

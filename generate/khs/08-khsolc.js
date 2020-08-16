@@ -1,10 +1,16 @@
 const puppeteer = require('puppeteer');
+
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "08-khsolc";
 
 module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    // přístup na stránku
     await page.setViewport({
       width: 900,
       height: 600
@@ -12,8 +18,6 @@ module.exports = function () {
     await page.goto('http://www.khsolc.cz/info_verejnost.aspx', {
       waitUntil: 'networkidle2'
     });
-
-    
 
     // úprava css - očištění od nesmyslů
     await page.evaluate(async () => {
@@ -140,6 +144,8 @@ module.exports = function () {
     save('out/data.json', {
       "08": preparedData
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();

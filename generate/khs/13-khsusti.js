@@ -6,6 +6,9 @@ const {
 
 const save = require('./_save');
 const clean = require('./_clean');
+const report = require('./_report');
+
+const khs = "13-khsusti";
 
 module.exports = function () {
   (async () => {
@@ -99,6 +102,8 @@ module.exports = function () {
         save('out/data.json', {
           "13": preparedData
         });
+
+        report(khs, "OK");
       }
 
       new PdfReader().parseFileItems("out/13-khsusti.pdf", function (err, item) {

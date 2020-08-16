@@ -1,6 +1,7 @@
 const puppeteer = require('puppeteer');
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
 const { createWorker, createScheduler } = require('tesseract.js');
 const sharp = require('sharp');
 
@@ -58,7 +59,7 @@ function generateOCRimage(crop, saveToFile) {
       .normalise(true)
       .threshold(110) // 158 nebo 161
       .toFile(saveToFile, function (err) {
-        if (err) console.log(err);
+        if (err) throw(err);
         OCRurl.push(saveToFile);
         resolve();
       })
@@ -68,20 +69,29 @@ function generateOCRimage(crop, saveToFile) {
 function generateOCRimages() {
 
   // zkontroluje jestli složka existuje
-  var dir = 'ocr/khsova/';
-  if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir);
+  var directory = `temp/${khs}/`;
+  if (!fs.existsSync(directory)){
+      fs.mkdirSync(directory);
   }
 
+  // synchronní mazání obsahu složky
+  const files = fs.readdirSync(directory);
+  for (const file of files) {
+    fs.unlink(path.join(directory, file), err => {
+      if (err) throw err;
+    });
+  }
+
+  // vygenerujeme obrázky pro OCR (co nejmenší, černá, kontrast apod.)
   for (const pozice in OCRpozice) {
     if (OCRpozice.hasOwnProperty(pozice)) {
       const crop = OCRpozice[pozice];
-      const saveToFile = `ocr/khsova/${pozice}.png`;
+      const saveToFile = `${directory}${pozice}.png`;
       generateOCRimage(crop, saveToFile);
     }
   }
 
-  // Počkáme, až se všechny obrázky vygenerují
+  // počkáme, až se všechny obrázky vygenerují
   Promise.all(sharpPromises)
     .then(() => {
       // console.log('OCR obrázky vygenerovány');
@@ -91,7 +101,7 @@ function generateOCRimages() {
 
 // --- Recognize přes tesseract ------------------------------------------------
 
-function recognizeOCRimages(params) {
+function recognizeOCRimages() {
   const scheduler = createScheduler();
   const worker1 = createWorker();
   const worker2 = createWorker();
@@ -136,8 +146,8 @@ function recognizeOCRimages(params) {
         if (text !== "") {
           const number = parseInt(text, 10);
 
-          let [ okres, sub ] = key.split("-");
-          [,okres] = okres.split("/khsova/");
+          let [ , okres, sub ] = key.split("-");
+          [,okres] = okres.split(`/`);
           [sub,] = sub.split(".");
   
           if (OCRjson[okres] === undefined) {
@@ -202,6 +212,8 @@ function generateOCRjson(params) {
     save('out/data.json', {
       "07": preparedData
     });
+
+    report(khs, "OK");
 }
 
 

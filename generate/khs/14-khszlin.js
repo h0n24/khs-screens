@@ -1,11 +1,15 @@
 const puppeteer = require('puppeteer');
 const http = require('http');
 const fs = require('fs');
-const { PdfReader } = require('pdfreader');
+const path = require('path');
 const { createWorker, createScheduler } = require('tesseract.js');
 const sharp = require('sharp');
+const express = require('express');
 
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "14-khszlin";
 
 const OCRpozice = {
   "1": [155, 476, 120, 305],
@@ -23,11 +27,11 @@ function prepareOCRimage() {
   (async () => {
 
     // pro účely převodu pdf na obrázek je třeba vytvořit server
-    var express = require('express');
-    var http = require('http');
+    const srvPort = 8771;
+    const srvURL = "http://localhost";
 
-    var app = express();
-    var serv = http.createServer(app);
+    const app = express();
+    const serv = http.createServer(app);
 
     app.use('/', express.static('./'));
 
@@ -36,36 +40,37 @@ function prepareOCRimage() {
       serv.close();
     });
 
-    serv.listen(8771, function () {
+    serv.listen(srvPort, function () {
       // console.log("server starting");
     });
 
     // puppeteer crawluje tento server, aby přes připravený pdf-reader vytvořil screenshot, bohužel pro windows neexistuje žádná stabilnější knihovna, která by převáděla pdf na png
     const browser2 = await puppeteer.launch();
     const page2 = await browser2.newPage();
+
     await page2.setViewport({
       width: 820,
       height: 1200
     });
-    await page2.goto(`http://localhost:8771/other/pdf-reader/web/?file=../../../out/14-khszlin.pdf`, {
+
+    await page2.goto(`${srvURL}:${srvPort}/other/pdf-reader/web/?file=../../../out/14-khszlin.pdf`, {
       waitUntil: 'networkidle0'
     });
 
     // screenshot pro OCR
     await page2.screenshot({
-      path: 'out/14-khszlin-ocr.png'
+      path: `out/${khs}.png`
     });
 
     // vypnutí serveru po převodu z pdf na obrázek
-    await page2.goto(`http://localhost:8771/close/`, {
+    await page2.goto(`${srvURL}:${srvPort}/close/`, {
       waitUntil: 'networkidle2'
     });
 
-    // začátek ocr, přípravy + čtení přes tesseract
-    generateOCRimages();
-
     await browser2.close();
 
+    // začátek ocr, přípravy + čtení přes tesseract
+    generateOCRimages();
   })();
 }
 
@@ -75,7 +80,7 @@ function generateOCRimage(crop, saveToFile) {
   sharpPromises.push(new Promise((resolve, reject) => {
     // treshold 180 zbarví pixely pod 180 do černé, 
     // zbytek bílá
-    sharp('out/14-khszlin-ocr.png')
+    sharp(`out/${khs}.png`)
       .extract({
         left: crop[0],
         top: crop[1],
@@ -92,7 +97,7 @@ function generateOCRimage(crop, saveToFile) {
       // .normalise(true)
       .threshold(140) // 158 nebo 161
       .toFile(saveToFile, function (err) {
-        if (err) console.log(err);
+        if (err) throw(err);
         OCRurl.push(saveToFile);
         resolve();
       })
@@ -100,22 +105,30 @@ function generateOCRimage(crop, saveToFile) {
 }
 
 function generateOCRimages() {
-
   // zkontroluje jestli složka existuje
-  var dir = 'ocr/khszlin/';
-  if (!fs.existsSync(dir)){
-      fs.mkdirSync(dir);
+  var directory = `temp/${khs}/`;
+  if (!fs.existsSync(directory)){
+      fs.mkdirSync(directory);
   }
 
+  // synchronní mazání obsahu složky
+  const files = fs.readdirSync(directory);
+  for (const file of files) {
+    fs.unlink(path.join(directory, file), err => {
+      if (err) throw err;
+    });
+  }
+
+  // vygenerujeme obrázky pro OCR (co nejmenší, černá, kontrast apod.)
   for (const pozice in OCRpozice) {
     if (OCRpozice.hasOwnProperty(pozice)) {
       const crop = OCRpozice[pozice];
-      const saveToFile = `ocr/khszlin/${pozice}.png`;
+      const saveToFile = `${directory}${pozice}.png`;
       generateOCRimage(crop, saveToFile);
     }
   }
 
-  // Počkáme, až se všechny obrázky vygenerují
+  // počkáme, až se všechny obrázky vygenerují
   Promise.all(sharpPromises)
     .then(() => {
       // console.log('OCR obrázky vygenerovány');
@@ -184,7 +197,7 @@ function recognizeOCRimages(params) {
           uzdraveni = parseInt(uzdraveni, 10);
           zemreli = parseInt(zemreli, 10);
 
-          let [, okres] = key.split("/khszlin/");
+          let [, okres] = key.split(`/${khs}/`);
           [okres,] = okres.split(".");
   
           if (OCRjson[okres] === undefined) {
@@ -253,37 +266,48 @@ function generateOCRjson(params) {
   save('out/data.json', {
     "14": preparedData
   });
+
+  report(khs, "OK");
 }
 
 module.exports = function () {
   (async () => {
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    const PDFfilePath = `out/${khs}.pdf`;
 
-    // Vyhledání pdf souboru (url se každý den mění)
-    await page.setViewport({ width: 1000, height: 1000});
-    await page.goto('http://www.khszlin.cz/', {waitUntil: 'networkidle2'});
-
-    // hledání url s pdf (každý den se URL mění)
-    const url = await page.evaluate(() => {
-      let names = document.querySelectorAll('.pdf');
-      let arr = Array.prototype.slice.call(names);
-      for (let i = 0; i < arr.length; i += 1) {
-
-        if (arr[i].innerHTML.includes('Informace o výskytu koronaviru ve Zlínském kraji')) {
-          return arr[i].href;
-        }
-      }
-    });
-
-    // ukládání pdf -> generování obrázku
-    const file = fs.createWriteStream("out/14-khszlin.pdf");
-    const request = http.get(url, function (response) {
-      response.pipe(file);
-
+    // pokud již soubor existuje, nestahovat znovu, 
+    // zrychluje proces, šetří KHS weby
+    if (fs.existsSync(PDFfilePath)) {
+      report(khs, "PDF soubor byl nalezen, přeskakuji stahování");
       prepareOCRimage();
-    });
-  
-    await browser.close();
+
+    } else {
+      const browser = await puppeteer.launch();
+      const page = await browser.newPage();
+
+      // Vyhledání pdf souboru (url se každý den mění)
+      await page.setViewport({ width: 1000, height: 1000});
+      await page.goto('http://www.khszlin.cz/', {waitUntil: 'networkidle2'});
+
+      // hledání url s pdf (každý den se URL mění)
+      const url = await page.evaluate(() => {
+        let names = document.querySelectorAll('.pdf');
+        let arr = Array.prototype.slice.call(names);
+
+        for (let i = 0; i < arr.length; i += 1) {
+          if (arr[i].innerHTML.includes('Informace o výskytu koronaviru ve Zlínském kraji')) {
+            return arr[i].href;
+          }
+        }
+      });
+
+      // ukládání pdf -> generování obrázku
+      const file = fs.createWriteStream(PDFfilePath);
+      const request = http.get(url, function (response) {
+        response.pipe(file);
+        prepareOCRimage();
+      });
+
+      await browser.close();
+    }
   })();
 }

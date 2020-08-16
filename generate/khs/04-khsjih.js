@@ -1,10 +1,16 @@
 const puppeteer = require('puppeteer');
+
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "04-khsjih";
 
 module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    // přístup na stránku
     await page.setViewport({
       width: 1000,
       height: 900
@@ -88,6 +94,8 @@ module.exports = function () {
     save('out/data.json', {
       "04": crawledData
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();

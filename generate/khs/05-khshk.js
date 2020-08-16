@@ -1,11 +1,17 @@
 const puppeteer = require('puppeteer');
+
 const save = require('./_save');
 const clean = require('./_clean');
+const report = require('./_report');
+
+const khs = "05-khshk";
 
 module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+
+    // přístup na stránku
     await page.setViewport({
       width: 1000,
       height: 2600
@@ -41,7 +47,6 @@ module.exports = function () {
             const testTitleTested = 'Královéhradecký kraj - COVID-19'.replace(/\s/g,'');
 
             if (testTitleOriginal.includes(testTitleTested)) {
-
               let rows = arr[i].querySelectorAll("tr");
 
               // přeskakujeme první tři řádky
@@ -83,7 +88,6 @@ module.exports = function () {
           const title = arr[i].querySelectorAll("tr td span");
 
           if (title[0] !== undefined) {
-
             const testTimeOriginal = title[1].innerHTML.replace(/\s/g,'');
             const testTimeTested = "Situace k ".replace(/\s/g,'');
 
@@ -154,6 +158,8 @@ module.exports = function () {
     save('out/time.json', {
       "05": ISODate
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();

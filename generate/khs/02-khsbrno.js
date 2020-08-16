@@ -7,23 +7,19 @@ const {
 
 const save = require('./_save');
 const clean = require('./_clean');
+const report = require('./_report');
+
+const khs = "02-khsbrno";
 
 module.exports = function () {
   (async () => {
 
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    await page.setViewport({
-      width: 400,
-      height: 1200
-    });
+
+    // přístup na stránku
     await page.goto('https://www.khsbrno.cz/', {
       waitUntil: 'networkidle2'
-    });
-
-    // normalní screen
-    await page.screenshot({
-      path: 'out/02-khsbrno.png'
     });
 
     // hledání posledního pdf
@@ -56,7 +52,7 @@ module.exports = function () {
       });
     }
 
-    // // čtení pdf
+    // čtení pdf
     function onPdfSavedToDisk() {
       let okresY = [];
       let osaX = [];
@@ -168,6 +164,8 @@ module.exports = function () {
         save('out/data.json', {
           "02": preparedData
         });
+
+        report(khs, "OK");
       }
 
       new PdfReader().parseFileItems("out/02-khsbrno.pdf", function (err, item) {

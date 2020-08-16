@@ -1,6 +1,10 @@
 // require
 const puppeteer = require('puppeteer');
+
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "09-khspce";
 
 // globální proměnné -----------------------------------------------------------
 const obyvatelstvo = {
@@ -169,6 +173,8 @@ module.exports = function () {
     save('out/data.json', {
       "09": preparedArray
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();

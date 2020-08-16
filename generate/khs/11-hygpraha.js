@@ -1,5 +1,9 @@
 const puppeteer = require('puppeteer');
+
 const save = require('./_save');
+const report = require('./_report');
+
+const khs = "11-hygpraha";
 
 module.exports = function () {
   (async () => {
@@ -86,6 +90,8 @@ module.exports = function () {
     save('out/data.json', {
       "11": crawledData
     });
+
+    report(khs, "OK");
 
     await browser.close();
   })();
