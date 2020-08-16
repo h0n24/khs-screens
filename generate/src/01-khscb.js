@@ -67,7 +67,39 @@ module.exports = function () {
       }
     });
 
-    // zpracování dat
+    // crawlování času
+    const crawledTime = await page.evaluate(() => {
+      let tables = document.querySelectorAll("table");
+      let arr = Array.prototype.slice.call(tables);
+      let preparedTime;
+
+      for (let i = 0; i < arr.length; i += 1) {
+        try {
+          const title = arr[i].querySelectorAll("tr td b");
+
+          if (title[0] !== undefined) {
+            const testTimeOriginal = title[0].innerHTML.replace(/\s/g,'');
+            const testTimeTested = "Údaje k".replace(/\s/g,'');
+
+            if (testTimeOriginal.includes(testTimeTested)) {
+
+              preparedTime = title[0].innerHTML;
+              preparedTime = preparedTime.replace("Údaje k", "");
+              preparedTime = preparedTime.replace("&nbsp;", "");
+              preparedTime = preparedTime.replace("<br>", "");
+              preparedTime = preparedTime.trim();
+
+              return preparedTime;
+            }
+          }
+        } catch (error) {
+
+        }
+      }
+    });
+
+    // zpracování dat ----------------------------------------------------------
+
     const obyvatelstvo = {
       "České Budějovice": 195903,
       "Český Krumlov": 61556,
@@ -94,6 +126,30 @@ module.exports = function () {
 
     save('out/data.json', {
       "01": preparedData
+    });
+
+    // zpracování času -------------------------------------------------------
+    // příklad vstupu: 15. 8. 2020 18:00
+
+    let dateTime = crawledTime;
+    let [den, mesic, rok, time] = dateTime.split(" ");
+
+    den = den.replace(".", "");
+    mesic = mesic.replace(".", "");
+
+    den = parseInt(den, 10);
+    mesic = parseInt(mesic, 10);
+    rok = parseInt(rok, 10);
+
+    mesic < 9 ? mesic = `0${mesic}` : mesic;
+    den < 9 ? den = `0${den}` : den;
+
+    date = `${rok}-${mesic}-${den}`;
+    dateTime = `${date} ${time}`;
+    let ISODate = new Date(dateTime).toISOString();
+
+    save('out/time.json', {
+      "01": ISODate
     });
 
     report(khs, "OK");

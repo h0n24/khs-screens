@@ -24,11 +24,10 @@ function createNewFileOrSkip(file) {
       // console.error(`${dataFile} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`);
       fs.writeFileSync(dataFile, "[]");
       // report(shortFile, "vytvořen");
-    }
-    else {
-      if (shortFile === "data.json") {
-        report(shortFile, "existuje, updatuji data");
-      }
+    } else {
+      // if (shortFile === "data.json") {
+      //   report(shortFile, "existuje, updatuji data");
+      // }
     }
   });
 }
@@ -69,7 +68,8 @@ try {
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
 // jen pro test
-// require("./src/13-khsusti")();
+// require("./src/01-khscb")();
+// require("./src/05-khshk")();
 // return false;
 
 // jednotlivé scripty pro khs
