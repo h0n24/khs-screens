@@ -144,14 +144,15 @@ module.exports = function () {
     mesic < 9 ? mesic = `0${mesic}` : mesic;
     den < 9 ? den = `0${den}` : den;
 
-    date = `${rok}-${mesic}-${den}`;
-    dateTime = `${date} ${time}`;
+    const tempDate = `${rok}-${mesic}-${den}`;
+    dateTime = `${tempDate} ${time}`;
     let ISODate = new Date(dateTime).toISOString();
 
     save('out/time.json', {
       "01": ISODate
     });
 
+    // finalizace  -------------------------------------------------------------
     report(khs, "OK");
 
     await browser.close();

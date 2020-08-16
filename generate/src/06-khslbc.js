@@ -221,6 +221,45 @@ module.exports = function () {
         }
       });
 
+      // hledání data aktualizace
+      const crawledTime = await page2.evaluate(() => {
+        let spans = document.querySelectorAll("span[style='font-size: 10pt;']");
+        let arr = Array.prototype.slice.call(spans);
+        for (let i = 0; i < arr.length; i += 1) {
+
+          if (arr[i].innerText.includes('Aktualizace')) {
+            return arr[i].innerText;
+          }
+        }
+      });
+
+      // čištění času
+      // ukázka dat: Stav k 16.8.2020 - 18:15
+      // odstranění všeho kromě čísel, tečky, čárky a dvojtečky
+      let [date, time] = crawledTime.split("v ");
+      date = date.replace(/[^0-9.]/g, "");
+      time = time.replace(/[^0-9:]/g, "");
+
+      let [den, mesic, rok] = date.split(".");
+
+      den = den.replace(".", "");
+      mesic = mesic.replace(".", "");
+
+      den = parseInt(den, 10);
+      mesic = parseInt(mesic, 10);
+      rok = parseInt(rok, 10);
+
+      mesic < 9 ? mesic = `0${mesic}` : mesic;
+      den < 9 ? den = `0${den}` : den;
+
+      const tempDate = `${rok}-${mesic}-${den}`;
+      dateTime = `${tempDate} ${time}`;
+      let ISODate = new Date(dateTime).toISOString();
+
+      save('out/time.json', {
+        "06": ISODate
+      });
+
       // ukládání pdf a parsování pdf --------------------------------------------
       const file = fs.createWriteStream(PDFfilePath);
       const request = https.get(url, function (response) {

@@ -9,6 +9,8 @@ const khs = "12-khsstc";
 module.exports = function () {
   (async () => {
     const browser = await puppeteer.launch();
+
+    // stažení dat -------------------------------------------------------------
     const page = await browser.newPage();
 
     await page.goto('https://services7.arcgis.com/6U6Ps5FLizN0Qujz/ArcGIS/rest/services/Po%C4%8Det_onemocn%C4%9Bn%C3%AD_COVID19_ve_St%C5%99edo%C4%8Desk%C3%A9m_kraji/FeatureServer/0/query?where=1%3D1&geometryType=esriGeometryEnvelope&geometryPrecision=6&spatialRel=esriSpatialRelIntersects&outFields=kod%2Cnazev%2CPocetPripadu%2CPocetVylecenych%2CPocetZemrelych%2CPocetObyvatel&resultOffset=0&returnGeometry=false&returnZ=false&returnM=false&returnIdsOnly=false&returnCountOnly=false&returnDistinctValues=false&returnTrueCurves=false&returnExtentsOnly=false&f=pjson', {
@@ -67,6 +69,27 @@ module.exports = function () {
       "12": preparedData
     });
 
+    // stažení infa o posledním update -----------------------------------------
+
+    const page2 = await browser.newPage();
+
+    await page2.goto('https://services7.arcgis.com/6U6Ps5FLizN0Qujz/ArcGIS/rest/services/Po%C4%8Det_onemocn%C4%9Bn%C3%AD_COVID19_ve_St%C5%99edo%C4%8Desk%C3%A9m_kraji/FeatureServer/0/?f=pjson', {
+      waitUntil: 'networkidle2'
+    });
+
+    // parsování dat
+    let dataTime = await page2.evaluate(() => {
+      return JSON.parse(document.querySelector("body").innerText);
+    });
+
+    const unixTime = dataTime.editingInfo.lastEditDate; //unixtime in ms
+    const ISODate = new Date(unixTime).toISOString();
+
+    save('out/time.json', {
+      "12": ISODate
+    });
+
+    // finalizace  -------------------------------------------------------------
     report(khs, "OK");
 
     await browser.close();
