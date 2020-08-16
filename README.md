@@ -48,6 +48,7 @@ Pozor, celé repo má více než 3 GB, samotný zdrojový kód pak cca 500 MB.
 Při vývoji zemřely tisíce subverzí umělé inteligence. Zvláště ty, které nedokázaly rozlišit mezi 6 a 8. Nechť je jim křemíkové nebe lehké. Pokud znáte Sarah Connorovou, možná budu potřebovat číslo.
 
 ## Kontakt a další
+- Web: [sablatura.info](https://www.sablatura.info)
 - Email: [h0n24.cz@gmail.com](mailto:h0n24.cz@gmail.com)
 - FB: [Messenger](https://www.messenger.com/t/jan.sablatura)
 
