@@ -22,24 +22,24 @@ fs.writeFileSync('out/time.json', "[]");
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
 // jen pro test
-// require("./khs/14-khszlin")();
+// require("./src/14-khszlin")();
 // return false;
 
 // jednotlivé scripty pro khs
-require("./khs/01-khscb")();
-require("./khs/02-khsbrno")();
-require("./khs/03-khskv")();
-require("./khs/04-khsjih")();
-require("./khs/05-khshk")();
-require("./khs/06-khslbc")();
-require("./khs/07-khsova")();
-require("./khs/08-khsolc")();
-require("./khs/09-khspce")();
-require("./khs/10-khsplzen")();
-require("./khs/11-hygpraha")();
-require("./khs/12-khsstc")();
-require("./khs/13-khsusti")();
-require("./khs/14-khszlin")();
+require("./src/01-khscb")();
+require("./src/02-khsbrno")();
+require("./src/03-khskv")();
+require("./src/04-khsjih")();
+require("./src/05-khshk")();
+require("./src/06-khslbc")();
+require("./src/07-khsova")();
+require("./src/08-khsolc")();
+require("./src/09-khspce")();
+require("./src/10-khsplzen")();
+require("./src/11-hygpraha")();
+require("./src/12-khsstc")();
+require("./src/13-khsusti")();
+require("./src/14-khszlin")();
 
 // todo ------------------------------------------------------------------------
 // exposeFunction pro clean
