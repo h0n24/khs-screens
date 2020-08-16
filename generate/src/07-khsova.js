@@ -233,37 +233,45 @@ module.exports = function () {
 
       const browser = await puppeteer.launch();
       const page = await browser.newPage();
+      let pageLoaded = true;
 
       await page.setViewport({
         width: 1200,
         height: 850
       });
+
       await page.goto('http://www.khsova.cz/', {
         waitUntil: 'networkidle2'
+      }).catch(e => {
+        report(khs, e);
+        pageLoaded = false;
       });
-  
-      // hledání url s obrázkem (každý den se URL mění)
-      const url = await page.evaluate(() => {
-        let images = document.querySelectorAll(".tp-kbimg");
-        let arr = Array.prototype.slice.call(images);
-        for (let i = 0; i < arr.length; i += 1) {
-          if (arr[i].src.includes('www.khsova.cz/sliders/slider_mapa_koronavirus')) {
-            return images[0].src;
+
+      if (pageLoaded) {
+        
+        // hledání url s obrázkem (každý den se URL mění)
+        const url = await page.evaluate(() => {
+          let images = document.querySelectorAll(".tp-kbimg");
+          let arr = Array.prototype.slice.call(images);
+          for (let i = 0; i < arr.length; i += 1) {
+            if (arr[i].src.includes('www.khsova.cz/sliders/slider_mapa_koronavirus')) {
+              return images[0].src;
+            }
           }
-        }
-      });
-  
-      // stažení verze pro OCR 
-      const file = fs.createWriteStream(OCRfilePath);
-      const request = http.get(url, function (response) {
-        response.pipe(file);
-      });
-  
-      file.on('finish', function () {
-        // report(khs, "OCR soubor stažen");
-        // inicializace
-        generateOCRimages();
-      });
+        });
+
+        // stažení verze pro OCR 
+        const file = fs.createWriteStream(OCRfilePath);
+        const request = http.get(url, function (response) {
+          response.pipe(file);
+        });
+
+        file.on('finish', function () {
+          // report(khs, "OCR soubor stažen");
+          // inicializace
+          generateOCRimages();
+        });
+      }
   
       await browser.close();
     }
