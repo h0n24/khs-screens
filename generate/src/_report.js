@@ -18,6 +18,11 @@ module.exports = function (khs, message) {
     color = 31;
   }
 
+  if (parsedMessage.includes(`ERR_WORKING_WITH_OLD_DATA`)) {
+    parsedMessage = `ERR_WORKING_WITH_OLD_DATA: smažte obsah složky out/. Data jsou příliš stará.`;
+    color = 31;
+  }
+
   // obarvení khs
   let khsIdentifier = khs.padEnd(12, ' ');
   khsIdentifier = `\x1b[${color}m${khsIdentifier}\x1b[0m`;

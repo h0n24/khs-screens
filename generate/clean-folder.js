@@ -11,3 +11,9 @@ for (const file of files) {
     if (err) throw err;
   });
 }
+
+// uloží, kdy byla složka smazána naposledy
+const date = new Date();
+const dateIso = date.toISOString();
+
+fs.writeFileSync("out/first.json", `["${dateIso}"]`);

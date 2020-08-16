@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const report = require('./src/_report');
 
-// --- globální nastavení ------------------------------------------------------
+// --- globální nastavení a proměnné -------------------------------------------
 
 // výpis chyb & a nastavení max listeners na vyšší hodnotu (lepší paralelizace)
 process.setMaxListeners(0);
@@ -26,8 +26,9 @@ function createNewFileOrSkip(file) {
       // report(shortFile, "vytvořen");
     }
     else {
-      // console.log(`${dataFile} exists, and it is writable`);
-      report(shortFile, "existuje, updatuji data");
+      if (shortFile === "data.json") {
+        report(shortFile, "existuje, updatuji data");
+      }
     }
   });
 }
@@ -42,12 +43,34 @@ createNewFileOrSkip("out/time.json");
 
 console.log(""); // odsazení prvního řádku pro lepší čitelnost
 
+// zobrazování posledního smazání dat, ať se neevidují příliš stará data
+const date = new Date();
+try {
+  const rawDateFolderCleaned = fs.readFileSync("out/first.json");
+  const [ISOFolderCleaned] = JSON.parse(rawDateFolderCleaned);
+
+  const dateFolderCleaned = new Date(ISOFolderCleaned);
+  const diffTime = Math.abs(date.getTime() - dateFolderCleaned.getTime());
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+
+  const timeFolderCleaned = new Date(diffTime).toISOString().substr(11, 8);
+  report("out/ clean", timeFolderCleaned);
+
+  if (diffHours > 12) {
+    report("out/ clean", "ERR_WORKING_WITH_OLD_DATA");
+  }
+} catch (error) {
+  const dateIso = date.toISOString();
+  fs.writeFileSync("out/first.json", `["${dateIso}"]`);
+  report("out/ clean", "vytvořen first.json");
+}
+
 // model dat:
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
 // jen pro test
-require("./src/13-khsusti")();
-return false;
+// require("./src/13-khsusti")();
+// return false;
 
 // jednotlivé scripty pro khs
 require("./src/01-khscb")();
@@ -70,6 +93,7 @@ require("./src/14-khszlin")();
 // puppeteer - tor
 // dopočítat některá data z oficiální API
 // dodělat - porovnání s API z ministerstva
+// poslední aktualizace webů
 
 // isdown api? - kontrolovat favicony, případně podobně malé části
 // https://api-prod.downfor.cloud/httpcheck/http://www.khsova.cz
