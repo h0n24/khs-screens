@@ -31,6 +31,8 @@ const OCRpozice = {
   "6-h": [467, 279, 30, 12]
 }
 
+const OCRpoziceDatum = [704, 40, 84, 15];
+
 let OCRurl = [];
 let sharpPromises = [];
 let OCRjson = {};
@@ -66,6 +68,34 @@ function generateOCRimage(crop, saveToFile) {
   }));
 }
 
+function generateOCRimageDate(crop, saveToFile) {
+  sharpPromises.push(new Promise((resolve, reject) => {
+
+    // treshold 180 zbarví pixely pod 180 do černé, 
+    // zbytek bílá
+    sharp('out/07-khsova-ocr.png')
+      .extract({
+        left: crop[0],
+        top: crop[1],
+        width: crop[2],
+        height: crop[3]
+      })
+      .resize({height: 100})
+      .sharpen(100)
+      .modulate({
+        brightness: 1.0,
+        saturation: 1.5,
+        // hue: 180
+      })
+      .normalise(true)
+      .threshold(161) // 158 nebo 161
+      .toFile(saveToFile, function (err) {
+        if (err) throw(err);
+        resolve();
+      })
+  }));
+}
+
 function generateOCRimages() {
 
   // zkontroluje jestli složka existuje
@@ -91,6 +121,10 @@ function generateOCRimages() {
     }
   }
 
+  // vygenerujeme obrázek pro čtení data
+  const saveToFile = `${directory}date.png`;
+  generateOCRimageDate(OCRpoziceDatum, saveToFile);
+
   // počkáme, až se všechny obrázky vygenerují
   Promise.all(sharpPromises)
     .then(() => {
@@ -103,14 +137,20 @@ function generateOCRimages() {
 
 function recognizeOCRimages() {
   const scheduler = createScheduler();
+  const scheduler2 = createScheduler();
+
   const worker1 = createWorker();
   const worker2 = createWorker();
+  const worker3 = createWorker();
 
   // console.log("OCR čtení přes tesseract");
 
   let OCRjobs = [];
 
   (async () => {
+
+    // Tesseract OCR dat -------------------------------------------------------
+    // OCR: veškerá data
     await worker1.load();
     await worker2.load();
 
@@ -158,9 +198,39 @@ function recognizeOCRimages() {
         }
       }
     }
+
+    // OCR: pouze čas
+    await worker3.load();
+
+    // musí být eng, protože chceme detekovat i tečky a dvojtečky
+    await worker3.loadLanguage('eng');
+    await worker3.initialize('eng');
+
+    const workerParametersDate = {
+      tessedit_char_blacklist: "!?@#$%&*()<>_-+=/;'\"ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz",
+      tessedit_char_whitelist: '0123456789.:,Vv',
+      // classify_bln_numeric_mode: true
+    };
+
+    await worker3.setParameters(workerParametersDate);
+    scheduler2.addWorker(worker3);
+
+    const recognizeDate = scheduler2.addJob('recognize', `temp/${khs}/date.png`);
+    const parsedDateData = await recognizeDate.then(result => result.data);
+
+    // ukončení procesů
+    await scheduler.terminate(); // It also terminates all workers.
+    await scheduler2.terminate(); // It also terminates all workers.
+
+    // zpracování dat ----------------------------------------------------------
+    // samotná data
     generateOCRjson();
 
-    await scheduler.terminate(); // It also terminates all workers.
+    // čas
+    generateTimeJson(parsedDateData);
+
+    // finální report
+    report(khs, "OK");
   })();
 }
 
@@ -212,8 +282,44 @@ function generateOCRjson(params) {
     save('out/data.json', {
       "07": preparedData
     });
+}
 
-    report(khs, "OK");
+function generateTimeJson(parsedDateData) {
+  let parsedDate = parsedDateData.text;
+  if (parsedDate !== "") {
+
+    // všechny V přemění na v
+    parsedDate = parsedDate.replace("V", "v");
+    // odstraní všechny duplikované mezery
+    parsedDate = parsedDate.replace(/\s+/g, ' ');
+
+    // <datum>v<čas>
+    let [date, time] = parsedDate.split("v");
+
+    date = date.replace(/[^0-9.]/g, "");
+    time = time.replace(/[^0-9:]/g, "");
+
+    let [den, mesic, rok] = date.split(".");
+
+    den = den.replace(".", "");
+    mesic = mesic.replace(".", "");
+
+    den = parseInt(den, 10);
+    mesic = parseInt(mesic, 10);
+    rok = parseInt(rok, 10);
+
+    mesic < 9 ? mesic = `0${mesic}` : mesic;
+    den < 9 ? den = `0${den}` : den;
+
+    const tempDate = `${rok}-${mesic}-${den}`;
+    const dateTime = `${tempDate} ${time}`;
+
+    let ISODate = new Date(dateTime).toISOString();
+
+    save('out/time.json', {
+      "07": ISODate
+    });
+  }
 }
 
 
