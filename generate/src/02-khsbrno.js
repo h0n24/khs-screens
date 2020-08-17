@@ -57,6 +57,7 @@ module.exports = function () {
       let okresY = [];
       let osaX = [];
       let pdfData = new Array(7);
+      let pdfDataTime = "";
 
       function pdfParsePrepareYAxis(item) {
         if (item.text === "Brno-město") {
@@ -89,6 +90,11 @@ module.exports = function () {
       }
 
       function pdfParse(item) {
+
+        // ukládání veškerého textu do stringu pro účely získání data
+        pdfDataTime = pdfDataTime + item.text;
+
+        // získání pozice X a Y
         pdfParsePrepareYAxis(item);
 
         // popis osy x
@@ -165,6 +171,60 @@ module.exports = function () {
           "02": preparedData
         });
 
+        // zpracování času
+        // je třeba vyhledat v celém textu (pozice x,y se mění)
+        let [tempTime,] = pdfDataTime.split("Přehled situace");
+        [,tempTime] = tempTime.split("EPIDEMIOLOGICKÁ SITUACE");
+
+        // ukázka dat:
+        // vJihomoravském krajize dne 14. srpna 2020, 17:00 hod.
+        
+        // přepsání měsíce z textu na číslo
+        tempTime = tempTime.replace("ledna","1.");
+        tempTime = tempTime.replace("února","2.");
+        tempTime = tempTime.replace("března","3.");
+        tempTime = tempTime.replace("dubna","4.");
+        tempTime = tempTime.replace("května","5.");
+        tempTime = tempTime.replace("června","6.");
+        tempTime = tempTime.replace("července","7.");
+        tempTime = tempTime.replace("srpna","8.");
+        tempTime = tempTime.replace("září","9.");
+        tempTime = tempTime.replace("října","10.");
+        tempTime = tempTime.replace("listopadu","11.");
+        tempTime = tempTime.replace("prosince","12.");
+
+        // odstraní // a všechny duplikované mezery
+        tempTime = tempTime.replace(/\s+/g,' ');
+
+        // dne <datum>, <čas>
+        [,tempTime] = tempTime.split("dne"); 
+        let [date, time] = tempTime.split(",");
+
+        date = date.replace(/[^0-9.]/g, "");
+        time = time.replace(/[^0-9:]/g, "");
+    
+        let [den, mesic, rok] = date.split(".");
+    
+        den = den.replace(".", "");
+        mesic = mesic.replace(".", "");
+    
+        den = parseInt(den, 10);
+        mesic = parseInt(mesic, 10);
+        rok = parseInt(rok, 10);
+    
+        mesic < 9 ? mesic = `0${mesic}` : mesic;
+        den < 9 ? den = `0${den}` : den;
+    
+        const tempDate = `${rok}-${mesic}-${den}`;
+        const dateTime = `${tempDate} ${time}`;
+
+        let ISODate = new Date(dateTime).toISOString();
+    
+        save('out/time.json', {
+          "02": ISODate
+        });
+
+        // finální report
         report(khs, "OK");
       }
 
