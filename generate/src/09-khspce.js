@@ -169,7 +169,7 @@ module.exports = function () {
     // crawlování dat: čas
     const crawledTime = await page.evaluate(() => {
       try {
-        const time = document.querySelectorAll(".entry-content p strong")[0].innerText;
+        const time = document.querySelector(".entry-content p strong").innerText;
         return time;
       } catch (error) {
 
@@ -186,7 +186,6 @@ module.exports = function () {
 
     // čištění času
     // ukázka: Údaje platné k  14.8. 2020 – 15:00 hodin
-
     let [date, time] = crawledTime.split("–");
 
     date = date.replace(/[^0-9.]/g, "");

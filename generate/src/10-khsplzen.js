@@ -1,3 +1,4 @@
+const puppeteer = require('puppeteer');
 const https = require('https');
 const fs = require('fs');
 const { createWorker, createScheduler } = require('tesseract.js');
@@ -229,5 +230,50 @@ module.exports = function () {
       // inicializace -> příprava OCR, čtení, generování JSONu
       generateOCRimages();
     });
+
+    // získávání času ----------------------------------------------------------
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    await page.goto('https://www.khsplzen.cz/odbory/odbor-epi/1928-aktualni-udaje-z-plzenskeho-kraje-sars-cov-2.html?tmpl=component&print=1&layout=default', {
+      waitUntil: 'networkidle2'
+    });
+
+    // crawlování dat: nakažení a aktivní
+    const crawledTime = await page.evaluate(() => {
+      try {
+        const date = document.querySelector(".art-postdateicon").innerText;
+        return date;
+      } catch (error) {
+
+      }
+    });
+
+    // čištění času
+    // ukázka: Aktualizováno: 16. 8. 2020 20:28
+    let preparedTime = crawledTime.replace("Aktualizováno: ", "");
+
+    let [den, mesic, rok, time] = preparedTime.split(" ");
+
+    den = den.replace(".", "");
+    mesic = mesic.replace(".", "");
+
+    den = parseInt(den, 10);
+    mesic = parseInt(mesic, 10);
+    rok = parseInt(rok, 10);
+
+    mesic < 9 ? mesic = `0${mesic}` : mesic;
+    den < 9 ? den = `0${den}` : den;
+
+    const tempDate = `${rok}-${mesic}-${den}`;
+    dateTime = `${tempDate} ${time}`;
+    let ISODate = new Date(dateTime).toISOString();
+
+    save('out/time.json', {
+      "10": ISODate
+    });
+
+    await browser.close();
   })();
 }
