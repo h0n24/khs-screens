@@ -74,7 +74,7 @@ const spreadsheetId = '1FFEDhS6VMWon_AWkJrf8j3XxjZ4J6UI1B2lO3IW-EEc';
 
 // čtení dat ze souboru
 const rawData = fs.readFileSync('out/data.json');
-let readData = JSON.parse(rawData);
+const readData = JSON.parse(rawData);
 
 // model dat:
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
@@ -123,6 +123,17 @@ if (minutes < 10) {
 
 const timeString = `Aktualizace v ${hours}:${minutes}`
 
+// čas poslední aktualizace přímo k jednotlivým KHS
+const rawTime = fs.readFileSync('out/time.json');
+const readTime = JSON.parse(rawTime);
+
+let preparedTime = [];
+
+for (let index = 0; index < readTime.length; index++) {
+  preparedTime[index] = [];
+  preparedTime[index][0] = readTime[index];
+}
+
 /**
  * Gets the data from Spreadsheet
  * @see https://docs.google.com/spreadsheets/d/1FFEDhS6VMWon_AWkJrf8j3XxjZ4J6UI1B2lO3IW-EEc/edit
@@ -132,7 +143,10 @@ function uploadData(auth) {
 
   const sheets = google.sheets({version: 'v4', auth});
 
-  // zápis data a času ------------------
+
+  // list crawl dnes ----------------------------------------------------------
+
+  // zápis data a času 
   let values = [
     [
       timeString, dateShort
@@ -176,6 +190,26 @@ function uploadData(auth) {
   sheets.spreadsheets.values.batchUpdate({
     spreadsheetId,
     resource: resourceCrawl,
+  }, (err, result) => {
+    if (err) {
+      console.log(err);
+    }
+  });
+
+  // list zdroje ----------------------------------------------------------
+
+  const dataAktualizace = [{
+    range: 'Zdroje!B9:B22',
+    values: preparedTime,
+  }];
+  // Additional ranges to update ...
+  let resourceAktualizace = {
+    data: dataAktualizace,
+    valueInputOption: "RAW",
+  };
+  sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId,
+    resource: resourceAktualizace,
   }, (err, result) => {
     if (err) {
       console.log(err);
