@@ -289,16 +289,18 @@ module.exports = function () {
       await page.goto('http://www.khszlin.cz/', {waitUntil: 'networkidle2'});
 
       // hledání url s pdf (každý den se URL mění)
-      const url = await page.evaluate(() => {
+      const [url, crawledTime] = await page.evaluate(() => {
         let names = document.querySelectorAll('.pdf');
         let arr = Array.prototype.slice.call(names);
 
         for (let i = 0; i < arr.length; i += 1) {
           if (arr[i].innerHTML.includes('Informace o výskytu koronaviru ve Zlínském kraji')) {
-            return arr[i].href;
+            return [arr[i].href, arr[i].innerHTML];
           }
         }
       });
+
+      await browser.close();
 
       // ukládání pdf -> generování obrázku
       const file = fs.createWriteStream(PDFfilePath);
@@ -307,7 +309,35 @@ module.exports = function () {
         prepareOCRimage();
       });
 
-      await browser.close();
+      // čištění času
+      // ukázka: "Hygienická stanice hlavního města Prahy informuje, 
+      //    že v Praze je aktuálně celkem 4 003 potvrzených případů onemocnění
+      //    covid-19.-● situace k 16.8.2020;18:00 hodin
+      let [date,,time] = crawledTime.split("-");
+
+      date = date.replace(/[^0-9.]/g, "");
+      time = time.replace(/[^0-9:]/g, "");
+
+      let [den, mesic, rok] = date.split(".");
+
+      den = den.replace(".", "");
+      mesic = mesic.replace(".", "");
+
+      den = parseInt(den, 10);
+      mesic = parseInt(mesic, 10);
+      rok = parseInt(rok, 10);
+
+      mesic < 9 ? mesic = `0${mesic}` : mesic;
+      den < 9 ? den = `0${den}` : den;
+
+      const tempDate = `${rok}-${mesic}-${den}`;
+      dateTime = `${tempDate} ${time}`;
+      let ISODate = new Date(dateTime).toISOString();
+
+      save('out/time.json', {
+        "14": ISODate
+      });
+      
     }
   })();
 }
