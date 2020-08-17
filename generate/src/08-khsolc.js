@@ -116,6 +116,14 @@ module.exports = function () {
       }
     });
 
+    // crawlování času
+    const crawledTime = await page.evaluate(() => {
+      const caption = document.querySelectorAll("caption")[0].innerText;
+      return caption;
+    });
+
+    // -------------------------------------------------------------------------
+
     // příprava dat
     let preparedData = [];
 
@@ -144,6 +152,42 @@ module.exports = function () {
     save('out/data.json', {
       "08": preparedData
     });
+
+    // -------------------------------------------------------------------------
+
+    // čištění času
+    // Nákaza COVID-19 v Olomouckém kraji ke dni 16.8.2020 18:00 
+    // odstranění všeho kromě čísel, tečky, čárky a dvojtečky
+    
+    let [, preparedTime] = crawledTime.split("ke dni") 
+    preparedTime = preparedTime.trim();
+
+    let [date, time] = preparedTime.split(" ");
+
+    date = date.replace(/[^0-9.]/g, "");
+    time = time.replace(/[^0-9:]/g, "");
+
+    let [den, mesic, rok] = date.split(".");
+
+    den = den.replace(".", "");
+    mesic = mesic.replace(".", "");
+
+    den = parseInt(den, 10);
+    mesic = parseInt(mesic, 10);
+    rok = parseInt(rok, 10);
+
+    mesic < 9 ? mesic = `0${mesic}` : mesic;
+    den < 9 ? den = `0${den}` : den;
+
+    const tempDate = `${rok}-${mesic}-${den}`;
+    dateTime = `${tempDate} ${time}`;
+    let ISODate = new Date(dateTime).toISOString();
+
+    save('out/time.json', {
+      "08": ISODate
+    });
+
+    // -------------------------------------------------------------------------
 
     report(khs, "OK");
 
