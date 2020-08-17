@@ -274,9 +274,11 @@ module.exports = function () {
   (async () => {
     const PDFfilePath = `out/${khs}.pdf`;
 
+    const checkFileExists = false;
+
     // pokud již soubor existuje, nestahovat znovu, 
     // zrychluje proces, šetří KHS weby
-    if (fs.existsSync(PDFfilePath)) {
+    if (checkFileExists && fs.existsSync(PDFfilePath)) {
       report(khs, "PDF soubor byl nalezen, přeskakuji stahování");
       prepareOCRimage();
 

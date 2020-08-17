@@ -327,11 +327,13 @@ module.exports = function () {
   (async () => {
     const OCRfilePath = "out/07-khsova-ocr.png";
 
+    const checkFileExists = false;
+
     // někdy se stránka khsova nedá načíst pod méně než 30s,
     // je tedy dobré manuálně stáhnout slider a vložit ho do složky out
     // tato část kódu kontroluje, jestli už soubor neexistuje, 
     // aby mohl přeskočit stahování
-    if (fs.existsSync(OCRfilePath)) {
+    if (checkFileExists && fs.existsSync(OCRfilePath)) {
 
       report(khs, "OCR soubor byl nalezen, přeskakuji stahování");
       generateOCRimages();

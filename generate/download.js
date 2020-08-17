@@ -64,36 +64,62 @@ try {
   report("out/ clean", "vytvořen first.json");
 }
 
-// model dat:
+// --- zjištění posledních časů aktualizace ------------------------------------
+
+// čas poslední aktualizace přímo k jednotlivým KHS
+const rawTime = fs.readFileSync('out/time.json');
+const readTime = JSON.parse(rawTime);
+
+
+// --- konkrétní scripty od khs ------------------------------------------------
+
+const seznamKHS = ["01-khscb", "02-khsbrno", "03-khskv", "04-khsjih", "05-khshk", "06-khslbc", "07-khsova", "08-khsolc", "09-khspce", "10-khsplzen", "11-hygpraha", "12-khsstc", "13-khsusti", "14-khszlin"];
+
+// typický model dat:
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
-// jen pro test
-// require("./src/01-khscb")();
-// require("./src/05-khshk")();
-// return false;
+const testing = false;
 
-// jednotlivé scripty pro khs
-require("./src/01-khscb")();
-require("./src/02-khsbrno")();
-require("./src/03-khskv")();
-require("./src/04-khsjih")();
-require("./src/05-khshk")();
-require("./src/06-khslbc")();
-require("./src/07-khsova")();
-require("./src/08-khsolc")();
-require("./src/09-khspce")();
-require("./src/10-khsplzen")();
-require("./src/11-hygpraha")();
-require("./src/12-khsstc")();
-require("./src/13-khsusti")();
-require("./src/14-khszlin")();
+// jen pro test
+if (testing) {
+  function khsn(string) {
+    let number = parseInt(string, 10);
+    number = number - 1;
+    return seznamKHS[number];
+  }
+
+  require(`./src/${khsn("6")}`)();
+} else {
+  // jednotlivé scripty pro khs
+
+  const date = new Date();
+  const ISOdate = date.toISOString();
+
+  for (let index = 0; index < seznamKHS.length; index++) {
+    const khs = seznamKHS[index];
+    const lastTime = readTime[index];
+    
+    // pokud nejsou data ze dneška
+    let lastDay = null;
+    try {
+      lastDay = lastTime.substring(0, 10);
+    } catch (error) {
+      
+    }
+    
+    const today = ISOdate.substring(0, 10);
+
+    if (lastDay !== today) {
+      require(`./src/${khs}`)();
+    }
+  }
+}
 
 // todo ------------------------------------------------------------------------
-// exposeFunction pro clean
+// refactor: exposeFunction pro clean
 // puppeteer - tor
 // dopočítat některá data z oficiální API
 // dodělat - porovnání s API z ministerstva
-// poslední aktualizace webů
 
 // isdown api? - kontrolovat favicony, případně podobně malé části
 // https://api-prod.downfor.cloud/httpcheck/http://www.khsova.cz

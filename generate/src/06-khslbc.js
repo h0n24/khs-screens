@@ -77,13 +77,18 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal) {
     pdfData.splice(0, 4);
 
   } else {
-    pdfData.push(item.text);
+
+    // je třeba přeskočit všechna data ze spodní části pdf, 
+    // protože tam se objevuje "aktualizováno v" 
+    if (item.y < 33) {
+      pdfData.push(item.text);
+    }
   }
 }
 
 function parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData) {
   // ve zbytku pdfData lze nalézt poslední datum aktualizace
-  // console.log(pdfData);
+  console.log(pdfData);
 
   for (let index = 0; index < pdfDataOkresy.length; index++) {
     const okres = pdfDataOkresy[index];
@@ -166,11 +171,13 @@ module.exports = function () {
     let pdfFinal = [];
     let preparedData = [];
 
+    const checkFileExists = false;
+
     // screenshot --------------------------------------------------------------
     const SCRfilePath = `out/${khs}.png`;
 
     // pokud již soubor existuje, nestahovat znovu, zrychluje proces
-    if (fs.existsSync(SCRfilePath)) {
+    if (checkFileExists && fs.existsSync(SCRfilePath)) {
       report(khs, "Screenshot byl nalezen, přeskakuji stahování");
     } else {
       await page.setViewport({
@@ -197,7 +204,7 @@ module.exports = function () {
 
     // pokud již soubor existuje, nestahovat znovu, 
     // zrychluje proces, šetří KHS weby
-    if (fs.existsSync(PDFfilePath)) {
+    if (checkFileExists && fs.existsSync(PDFfilePath)) {
       report(khs, "PDF soubor byl nalezen, přeskakuji stahování");
       parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData);
 
