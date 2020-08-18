@@ -5,7 +5,7 @@ const report = require('./_report');
 
 const khs = "08-khsolc";
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -192,5 +192,7 @@ module.exports = function () {
     report(khs, "OK");
 
     await browser.close();
+
+    resolve();
   })();
-}
+});

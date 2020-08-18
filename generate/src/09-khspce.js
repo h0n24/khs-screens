@@ -84,7 +84,7 @@ function prepareDataForSaving(crawledData, crawledHealed) {
   return preparedArray;
 }
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -215,5 +215,7 @@ module.exports = function () {
     report(khs, "OK");
 
     await browser.close();
+
+    resolve();
   })();
-}
+});

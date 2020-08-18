@@ -10,7 +10,7 @@ const report = require('./_report');
 
 const khs = "13-khsusti";
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
 
     const file = fs.createWriteStream("out/13-khsusti.pdf");
@@ -141,6 +141,8 @@ module.exports = function () {
         });
 
         report(khs, "OK");
+
+        resolve();
       }
 
       new PdfReader().parseFileItems("out/13-khsusti.pdf", function (err, item) {
@@ -166,4 +168,4 @@ module.exports = function () {
     }
     
   })();
-}
+});

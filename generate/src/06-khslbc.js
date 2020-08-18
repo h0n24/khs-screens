@@ -88,7 +88,6 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal) {
 
 function parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData) {
   // ve zbytku pdfData lze nalézt poslední datum aktualizace
-  console.log(pdfData);
 
   for (let index = 0; index < pdfDataOkresy.length; index++) {
     const okres = pdfDataOkresy[index];
@@ -130,6 +129,8 @@ function parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData) {
   saveToFile(preparedData);
 
   report(khs, "OK");
+
+  resolve();
 }
 
 function saveToFile(data) {
@@ -161,7 +162,7 @@ function parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData) {
   });
 }
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -281,4 +282,4 @@ module.exports = function () {
 
     await browser.close();
   })();
-}
+});

@@ -231,6 +231,8 @@ function recognizeOCRimages() {
 
     // finální report
     report(khs, "OK");
+
+    resolve();
   })();
 }
 
@@ -323,7 +325,7 @@ function generateTimeJson(parsedDateData) {
 }
 
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
     const OCRfilePath = "out/07-khsova-ocr.png";
 
@@ -384,4 +386,4 @@ module.exports = function () {
       await browser.close();
     }
   })();
-}
+});

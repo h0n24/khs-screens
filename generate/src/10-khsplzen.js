@@ -213,10 +213,12 @@ function generateOCRjson() {
     });
 
     report(khs, "OK");
+
+    resolve();
 }
 
 // --- Export ------------------------------------------------------------------
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
     const OCRurl = "https://www.khsplzen.cz/images/KHS/covid19/Plzensky_kraj.jpg";
 
@@ -276,4 +278,4 @@ module.exports = function () {
 
     await browser.close();
   })();
-}
+});

@@ -268,9 +268,11 @@ function generateOCRjson(params) {
   });
 
   report(khs, "OK");
+
+  resolve();
 }
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
     const PDFfilePath = `out/${khs}.pdf`;
 
@@ -342,4 +344,4 @@ module.exports = function () {
       
     }
   })();
-}
+});

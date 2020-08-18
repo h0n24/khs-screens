@@ -11,7 +11,7 @@ const report = require('./_report');
 
 const khs = "02-khsbrno";
 
-module.exports = function () {
+module.exports = new Promise((resolve, reject) => {
   (async () => {
 
     const browser = await puppeteer.launch();
@@ -226,6 +226,8 @@ module.exports = function () {
 
         // finální report
         report(khs, "OK");
+
+        resolve();
       }
 
       new PdfReader().parseFileItems("out/02-khsbrno.pdf", function (err, item) {
@@ -252,4 +254,4 @@ module.exports = function () {
 
     await browser.close();
   })();
-}
+});
