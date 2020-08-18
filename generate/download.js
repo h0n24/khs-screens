@@ -5,6 +5,8 @@ const report = require('./src/_report');
 
 // --- globální nastavení a proměnné -------------------------------------------
 
+console.time('download.js');
+
 // výpis chyb & a nastavení max listeners na vyšší hodnotu (lepší paralelizace)
 process.setMaxListeners(0);
 process.on('uncaughtException', errorHappened);
@@ -72,7 +74,6 @@ const readTime = JSON.parse(rawTime);
 
 
 // --- konkrétní scripty od khs ------------------------------------------------
-
 function runOnlyOutdated() {
   let promisesList = [];
 
@@ -80,7 +81,6 @@ function runOnlyOutdated() {
   const ISOdate = date.toISOString();
 
   for (let index = 0; index < seznamKHS.length; index++) {
-
     const khs = seznamKHS[index];
     const lastTime = readTime[index];
 
@@ -93,12 +93,10 @@ function runOnlyOutdated() {
     }
 
     const today = ISOdate.substring(0, 10);
-
     if (lastDay !== today) {
       promisesList.push(require(`./src/${khs}`));
     }
   }
-
   return promisesList;
 }
 
@@ -108,29 +106,37 @@ const seznamKHS = ["01-khscb", "02-khsbrno", "03-khskv", "04-khsjih", "05-khshk"
 // okres, pozitivni, vyleceni, umrti, aktivni, obyvatel
 
 const testing = false;
+let promisesList;
 
-// jen pro test
 if (testing) {
+  // jen pro test
   function khsn(string) {
     let number = parseInt(string, 10);
     number = number - 1;
     return seznamKHS[number];
   }
 
-  require(`./src/${khsn("6")}`)();
+  promisesList = [require(`./src/${khsn("14")}`)];
 } else {
   // jednotlivé scripty pro khs
-  const promisesList = runOnlyOutdated();
-
-  Promise.all(promisesList).then(function (results) {
-    // API results in the results array here
-    // processing can continue using the results of all three API requests
-    console.log("Všechny scripty staženy.");
-  }, function (err) {
-    // an error occurred, process the error here
-    console.log("Nastala chyba scriptů.")
-  });
+  promisesList = runOnlyOutdated();
 }
+
+Promise.all(promisesList).then(function (results) {
+  // API results in the results array here
+  // processing can continue using the results of all three API requests
+  
+  console.log("");
+  console.timeEnd('download.js');
+  console.log("Všechny scripty provedeny.");
+
+  // todo -> nahrání na web
+}, function (err) {
+  // an error occurred, process the error here
+  console.log("");
+  console.timeEnd('download.js');
+  console.log("Nastala chyba scriptů.")
+});
 
 
 
