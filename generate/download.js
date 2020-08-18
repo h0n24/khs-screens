@@ -39,15 +39,10 @@ function createNewFileOrSkip(file) {
 }
 
 // --- zjištění posledních časů aktualizace ------------------------------------
-let readTime = [];
 (async () => {
   await createNewFileOrSkip("out/data.json");
   await createNewFileOrSkip("out/time.json");
   // await createNewFileOrSkip("out/errors.json");
-
-  // čas poslední aktualizace přímo k jednotlivým KHS
-  const rawTime = fs.readFileSync('out/time.json');
-  readTime = JSON.parse(rawTime);
 })();
 
 // --- zpracování jednotlivých dat ---------------------------------------------
@@ -81,20 +76,31 @@ try {
 function runOnlyOutdated() {
   let promisesList = [];
 
+  let readTime = [];
+
+  // čas poslední aktualizace přímo k jednotlivým KHS
+  try {
+    const rawTime = fs.readFileSync('out/time.json');
+    readTime = JSON.parse(rawTime);
+  } catch (error) {
+    
+  }
+
   const date = new Date();
   const ISOdate = date.toISOString();
 
   for (let index = 0; index < seznamKHS.length; index++) {
     const khs = seznamKHS[index];
     const lastTime = readTime[index];
+    
+    let lastDay = null;
+    if (lastTime !== undefined) {
+      lastDay = lastTime.toString().substring(0, 10);
+    }
+    
+    const today = ISOdate.toString().substring(0, 10);
 
     // pokud nejsou data ze dneška
-    let lastDay = null;
-    try {
-      lastDay = lastTime.substring(0, 10);
-    } catch (error) {}
-
-    const today = ISOdate.substring(0, 10);
     if (lastDay !== today) {
       promisesList.push(require(`./src/${khs}`));
     }

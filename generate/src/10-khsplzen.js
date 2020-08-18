@@ -155,8 +155,12 @@ function recognizeOCRimages(params) {
         // načtení workerů, někdy žel blbne
         try {
           scheduler = createScheduler();
-          worker1 = createWorker();
-          worker2 = createWorker();
+          worker1 = createWorker({
+            logger: m => console.log(m), // Add logger here
+          });
+          worker2 = createWorker({
+            logger: m => console.log(m), // Add logger here
+          });
 
           const workerParameters = {
             tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
@@ -168,7 +172,7 @@ function recognizeOCRimages(params) {
             .load()
             .loadLanguage('digits-plzen')
             .initialize('digits-plzen')
-            .setParameters(workerParameters)
+            // .setParameters(workerParameters)
             .catch(() => {
               report(khs, "worker 1 má problém");
             });
@@ -177,7 +181,7 @@ function recognizeOCRimages(params) {
             .load()
             .loadLanguage('digits-plzen')
             .initialize('digits-plzen')
-            .setParameters(workerParameters)
+            // .setParameters(workerParameters)
             .catch(() => {
               report(khs, "worker 2 má problém");
             });
@@ -200,7 +204,7 @@ function recognizeOCRimages(params) {
           reject();
         }
 
-        if (workerLoaded !== false) {
+        if (workerLoaded === true) {
           console.log("test");
           const results = await Promise.all(OCRurl.map((url) => (
             OCRjobs[url] = scheduler.addJob('recognize', url)
