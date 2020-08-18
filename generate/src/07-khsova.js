@@ -2,7 +2,10 @@ const puppeteer = require('puppeteer');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { createWorker, createScheduler } = require('tesseract.js');
+const {
+  createWorker,
+  createScheduler
+} = require('tesseract.js');
 const sharp = require('sharp');
 
 const save = require('./_save');
@@ -51,7 +54,9 @@ function generateOCRimage(crop, saveToFile) {
         width: crop[2],
         height: crop[3]
       })
-      .resize({height: 100})
+      .resize({
+        height: 100
+      })
       .sharpen(100)
       .modulate({
         brightness: 1.5,
@@ -61,7 +66,7 @@ function generateOCRimage(crop, saveToFile) {
       .normalise(true)
       .threshold(110) // 158 nebo 161
       .toFile(saveToFile, function (err) {
-        if (err) throw(err);
+        if (err) throw (err);
         OCRurl.push(saveToFile);
         resolve();
       })
@@ -80,7 +85,9 @@ function generateOCRimageDate(crop, saveToFile) {
         width: crop[2],
         height: crop[3]
       })
-      .resize({height: 100})
+      .resize({
+        height: 100
+      })
       .sharpen(100)
       .modulate({
         brightness: 1.0,
@@ -90,200 +97,206 @@ function generateOCRimageDate(crop, saveToFile) {
       .normalise(true)
       .threshold(161) // 158 nebo 161
       .toFile(saveToFile, function (err) {
-        if (err) throw(err);
+        if (err) throw (err);
         resolve();
       })
   }));
 }
 
 function generateOCRimages() {
-
-  // zkontroluje jestli složka existuje
-  var directory = `temp/${khs}/`;
-  if (!fs.existsSync(directory)){
+  return new Promise((resolve, reject) => {
+    // zkontroluje jestli složka existuje
+    var directory = `temp/${khs}/`;
+    if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory);
-  }
-
-  // synchronní mazání obsahu složky
-  const files = fs.readdirSync(directory);
-  for (const file of files) {
-    fs.unlink(path.join(directory, file), err => {
-      if (err) throw err;
-    });
-  }
-
-  // vygenerujeme obrázky pro OCR (co nejmenší, černá, kontrast apod.)
-  for (const pozice in OCRpozice) {
-    if (OCRpozice.hasOwnProperty(pozice)) {
-      const crop = OCRpozice[pozice];
-      const saveToFile = `${directory}${pozice}.png`;
-      generateOCRimage(crop, saveToFile);
     }
-  }
 
-  // vygenerujeme obrázek pro čtení data
-  const saveToFile = `${directory}date.png`;
-  generateOCRimageDate(OCRpoziceDatum, saveToFile);
+    // synchronní mazání obsahu složky
+    const files = fs.readdirSync(directory);
+    for (const file of files) {
+      fs.unlink(path.join(directory, file), err => {
+        if (err) throw err;
+      });
+    }
 
-  // počkáme, až se všechny obrázky vygenerují
-  Promise.all(sharpPromises)
-    .then(() => {
-      // console.log('OCR obrázky vygenerovány');
-      recognizeOCRimages();
-    })
+    // vygenerujeme obrázky pro OCR (co nejmenší, černá, kontrast apod.)
+    for (const pozice in OCRpozice) {
+      if (OCRpozice.hasOwnProperty(pozice)) {
+        const crop = OCRpozice[pozice];
+        const saveToFile = `${directory}${pozice}.png`;
+        generateOCRimage(crop, saveToFile);
+      }
+    }
+
+    // vygenerujeme obrázek pro čtení data
+    const saveToFile = `${directory}date.png`;
+    generateOCRimageDate(OCRpoziceDatum, saveToFile);
+
+    // počkáme, až se všechny obrázky vygenerují
+    Promise.all(sharpPromises)
+      .then(() => {
+        (async () => {
+          // console.log('OCR obrázky vygenerovány');
+          await recognizeOCRimages();
+          resolve();
+        })();
+      })
+  });
 }
 
 // --- Recognize přes tesseract ------------------------------------------------
 
 function recognizeOCRimages() {
-  const scheduler = createScheduler();
-  const scheduler2 = createScheduler();
+  return new Promise((resolve, reject) => {
+    (async () => {
 
-  const worker1 = createWorker();
-  const worker2 = createWorker();
-  const worker3 = createWorker();
+      const scheduler = createScheduler();
+      const scheduler2 = createScheduler();
 
-  // console.log("OCR čtení přes tesseract");
+      const worker1 = createWorker();
+      const worker2 = createWorker();
+      const worker3 = createWorker();
 
-  let OCRjobs = [];
+      // console.log("OCR čtení přes tesseract");
 
-  (async () => {
+      let OCRjobs = [];
 
-    // Tesseract OCR dat -------------------------------------------------------
-    // OCR: veškerá data
-    await worker1.load();
-    await worker2.load();
+      // Tesseract OCR dat -------------------------------------------------------
+      // OCR: veškerá data
+      await worker1.load();
+      await worker2.load();
 
-    // bylo původně eng
-    await worker1.loadLanguage('digits-ova');
-    await worker2.loadLanguage('digits-ova');
-    await worker1.initialize('digits-ova');
-    await worker2.initialize('digits-ova');
+      // bylo původně eng
+      await worker1.loadLanguage('digits-ova');
+      await worker2.loadLanguage('digits-ova');
+      await worker1.initialize('digits-ova');
+      await worker2.initialize('digits-ova');
 
-    const workerParameters = {
-      tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-      tessedit_char_whitelist: '0123456789',
-      classify_bln_numeric_mode: true
-    };
+      const workerParameters = {
+        tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+        tessedit_char_whitelist: '0123456789',
+        classify_bln_numeric_mode: true
+      };
 
-    await worker1.setParameters(workerParameters);
-    await worker2.setParameters(workerParameters);
+      await worker1.setParameters(workerParameters);
+      await worker2.setParameters(workerParameters);
 
-    scheduler.addWorker(worker1);
-    scheduler.addWorker(worker2);
+      scheduler.addWorker(worker1);
+      scheduler.addWorker(worker2);
 
-    const results = await Promise.all(OCRurl.map((url) => (
-      OCRjobs[url] = scheduler.addJob('recognize', url)
-    )))
+      const results = await Promise.all(OCRurl.map((url) => (
+        OCRjobs[url] = scheduler.addJob('recognize', url)
+      )))
 
-    for (const key in OCRjobs) {
-      if (OCRjobs.hasOwnProperty(key)) {
-        const OCRpromise = OCRjobs[key];
-        const {
-          text
-        } = await OCRpromise.then(result => result.data);
+      for (const key in OCRjobs) {
+        if (OCRjobs.hasOwnProperty(key)) {
+          const OCRpromise = OCRjobs[key];
+          const {
+            text
+          } = await OCRpromise.then(result => result.data);
 
-        if (text !== "") {
-          const number = parseInt(text, 10);
+          if (text !== "") {
+            const number = parseInt(text, 10);
 
-          let [ , okres, sub ] = key.split("-");
-          [,okres] = okres.split(`/`);
-          [sub,] = sub.split(".");
-  
-          if (OCRjson[okres] === undefined) {
-            OCRjson[okres] = {};
+            let [, okres, sub] = key.split("-");
+            [, okres] = okres.split(`/`);
+            [sub, ] = sub.split(".");
+
+            if (OCRjson[okres] === undefined) {
+              OCRjson[okres] = {};
+            }
+
+            OCRjson[okres][sub] = number;
           }
-          
-          OCRjson[okres][sub] = number;
         }
       }
-    }
 
-    // OCR: pouze čas
-    await worker3.load();
+      // OCR: pouze čas
+      await worker3.load();
 
-    // musí být eng, protože chceme detekovat i tečky a dvojtečky
-    await worker3.loadLanguage('eng');
-    await worker3.initialize('eng');
+      // musí být eng, protože chceme detekovat i tečky a dvojtečky
+      await worker3.loadLanguage('eng');
+      await worker3.initialize('eng');
 
-    const workerParametersDate = {
-      tessedit_char_blacklist: "!?@#$%&*()<>_-+=/;'\"ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz",
-      tessedit_char_whitelist: '0123456789.:,Vv',
-      // classify_bln_numeric_mode: true
-    };
+      const workerParametersDate = {
+        tessedit_char_blacklist: "!?@#$%&*()<>_-+=/;'\"ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz",
+        tessedit_char_whitelist: '0123456789.:,Vv',
+        // classify_bln_numeric_mode: true
+      };
 
-    await worker3.setParameters(workerParametersDate);
-    scheduler2.addWorker(worker3);
+      await worker3.setParameters(workerParametersDate);
+      scheduler2.addWorker(worker3);
 
-    const recognizeDate = scheduler2.addJob('recognize', `temp/${khs}/date.png`);
-    const parsedDateData = await recognizeDate.then(result => result.data);
+      const recognizeDate = scheduler2.addJob('recognize', `temp/${khs}/date.png`);
+      const parsedDateData = await recognizeDate.then(result => result.data);
 
-    // ukončení procesů
-    await scheduler.terminate(); // It also terminates all workers.
-    await scheduler2.terminate(); // It also terminates all workers.
+      // ukončení procesů
+      await scheduler.terminate(); // It also terminates all workers.
+      await scheduler2.terminate(); // It also terminates all workers.
 
-    // zpracování dat ----------------------------------------------------------
-    // samotná data
-    generateOCRjson();
+      // zpracování dat ----------------------------------------------------------
+      // samotná data
+      generateOCRjson();
 
-    // čas
-    generateTimeJson(parsedDateData);
+      // čas
+      generateTimeJson(parsedDateData);
 
-    // finální report
-    report(khs, "OK");
+      // finální report
+      report(khs, "OK");
 
-    resolve();
-  })();
+      resolve();
+    })();
+  });
 }
 
 // --- Generování finálního json ------------------------------------------------
 
 function generateOCRjson(params) {
-  
-    // zpracování dat
-    const obyvatelstvo = {
-      "Bruntál": 91597,
-      "Opava": 176236,
-      "Nový Jičín": 151577,
-      "Ostrava": 320145,
-      "Karviná": 246324,
-      "Frýdek-Místek": 214660
-    }
 
-    let preparedData = [];
+  // zpracování dat
+  const obyvatelstvo = {
+    "Bruntál": 91597,
+    "Opava": 176236,
+    "Nový Jičín": 151577,
+    "Ostrava": 320145,
+    "Karviná": 246324,
+    "Frýdek-Místek": 214660
+  }
 
-    for (var okres in obyvatelstvo) {
-      if (obyvatelstvo.hasOwnProperty(okres)) {
+  let preparedData = [];
 
-        const position = Object.keys(obyvatelstvo).indexOf(okres);
-        const OCRokresData = OCRjson[position+1];
+  for (var okres in obyvatelstvo) {
+    if (obyvatelstvo.hasOwnProperty(okres)) {
 
-        let pozitivni = null;
-        if (OCRokresData.k && OCRokresData.t) {
-          const komunitni = parseInt(OCRokresData.k, 10);
-          const cestovatelska = parseInt(OCRokresData.t, 10);
-          pozitivni = komunitni + cestovatelska;
+      const position = Object.keys(obyvatelstvo).indexOf(okres);
+      const OCRokresData = OCRjson[position + 1];
 
-          // console.log(`${OCRokresData}: k:${komunitni} c:${cestovatelska} poz:${pozitivni}`);
-        }
+      let pozitivni = null;
+      if (OCRokresData.k && OCRokresData.t) {
+        const komunitni = parseInt(OCRokresData.k, 10);
+        const cestovatelska = parseInt(OCRokresData.t, 10);
+        pozitivni = komunitni + cestovatelska;
 
-        let vyleceni = null;
-        if (OCRokresData.h) {
-          vyleceni = OCRokresData.h;
-        }
-
-        let umrti = null;
-        let aktivni = null;
-
-        const obyvatel = obyvatelstvo[okres];
-
-        preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
+        // console.log(`${OCRokresData}: k:${komunitni} c:${cestovatelska} poz:${pozitivni}`);
       }
-    }
 
-    save('out/data.json', {
-      "07": preparedData
-    });
+      let vyleceni = null;
+      if (OCRokresData.h) {
+        vyleceni = OCRokresData.h;
+      }
+
+      let umrti = null;
+      let aktivni = null;
+
+      const obyvatel = obyvatelstvo[okres];
+
+      preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
+    }
+  }
+
+  save('out/data.json', {
+    "07": preparedData
+  });
 }
 
 function generateTimeJson(parsedDateData) {
@@ -338,7 +351,9 @@ module.exports = new Promise((resolve, reject) => {
     if (checkFileExists && fs.existsSync(OCRfilePath)) {
 
       report(khs, "OCR soubor byl nalezen, přeskakuji stahování");
-      generateOCRimages();
+      generateOCRimages().then(() => {
+        resolve();
+      });
     } else {
 
       const browser = await puppeteer.launch();
@@ -358,7 +373,7 @@ module.exports = new Promise((resolve, reject) => {
       });
 
       if (pageLoaded) {
-        
+
         // hledání url s obrázkem (každý den se URL mění)
         const url = await page.evaluate(() => {
           let images = document.querySelectorAll(".tp-kbimg");
@@ -379,11 +394,16 @@ module.exports = new Promise((resolve, reject) => {
         file.on('finish', function () {
           // report(khs, "OCR soubor stažen");
           // inicializace
-          generateOCRimages();
+          generateOCRimages().then(() => {
+            finalize();
+          });
         });
       }
-  
-      await browser.close();
+
+      async function finalize() {
+        await browser.close();
+        resolve();
+      }
     }
   })();
 });

@@ -17,28 +17,38 @@ function errorHappened(arg) {
   console.log(title, arg);
 }
 
+// --- vytvořit základ pro datové json soubory ---------------------------------
 function createNewFileOrSkip(file) {
-  const dataFile = file;
-  const [, shortFile] = file.split("/");
-  // zjistíme pokud soubor existuje, jinak jej vytvoříme
-  fs.access(dataFile, fs.constants.F_OK | fs.constants.W_OK, (err) => {
-    if (err) {
-      // console.error(`${dataFile} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`);
-      fs.writeFileSync(dataFile, "[]");
-      // report(shortFile, "vytvořen");
-    } else {
-      // if (shortFile === "data.json") {
-      //   report(shortFile, "existuje, updatuji data");
-      // }
-    }
+  return new Promise((resolve, reject) => {
+    const dataFile = file;
+    const [, shortFile] = file.split("/");
+    // zjistíme pokud soubor existuje, jinak jej vytvoříme
+    fs.access(dataFile, fs.constants.F_OK | fs.constants.W_OK, (err) => {
+      if (err) {
+        // console.error(`${dataFile} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`);
+        fs.writeFileSync(dataFile, "[]");
+        // report(shortFile, "vytvořen");
+      } else {
+        // if (shortFile === "data.json") {
+        //   report(shortFile, "existuje, updatuji data");
+        // }
+      }
+      resolve();
+    });
   });
 }
 
-// --- vytvořit základ pro datové json soubory ---------------------------------
-createNewFileOrSkip("out/data.json");
-createNewFileOrSkip("out/time.json");
-// createNewFileOrSkip("out/errors.json");
+// --- zjištění posledních časů aktualizace ------------------------------------
+let readTime = [];
+(async () => {
+  await createNewFileOrSkip("out/data.json");
+  await createNewFileOrSkip("out/time.json");
+  // await createNewFileOrSkip("out/errors.json");
 
+  // čas poslední aktualizace přímo k jednotlivým KHS
+  const rawTime = fs.readFileSync('out/time.json');
+  readTime = JSON.parse(rawTime);
+})();
 
 // --- zpracování jednotlivých dat ---------------------------------------------
 
@@ -66,12 +76,6 @@ try {
   report("out/ clean", "vytvořen first.json");
 }
 
-// --- zjištění posledních časů aktualizace ------------------------------------
-
-// čas poslední aktualizace přímo k jednotlivým KHS
-const rawTime = fs.readFileSync('out/time.json');
-const readTime = JSON.parse(rawTime);
-
 
 // --- konkrétní scripty od khs ------------------------------------------------
 function runOnlyOutdated() {
@@ -88,9 +92,7 @@ function runOnlyOutdated() {
     let lastDay = null;
     try {
       lastDay = lastTime.substring(0, 10);
-    }
-    catch (error) {
-    }
+    } catch (error) {}
 
     const today = ISOdate.substring(0, 10);
     if (lastDay !== today) {
@@ -116,7 +118,7 @@ if (testing) {
     return seznamKHS[number];
   }
 
-  promisesList = [require(`./src/${khsn("14")}`)];
+  promisesList = [require(`./src/${khsn("10")}`)];
 } else {
   // jednotlivé scripty pro khs
   promisesList = runOnlyOutdated();
@@ -125,7 +127,7 @@ if (testing) {
 Promise.all(promisesList).then(function (results) {
   // API results in the results array here
   // processing can continue using the results of all three API requests
-  
+
   console.log("");
   console.timeEnd('download.js');
   console.log("Všechny scripty provedeny.");

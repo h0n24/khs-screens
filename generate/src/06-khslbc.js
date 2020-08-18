@@ -150,7 +150,7 @@ function parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData) {
          * the callback. When no item is passed, it's indicating that
          * we're done reading the PDF. */
         // console.log('Done.');
-        parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData).then(()=> {
+        parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData).then(() => {
           resolve();
         });
       } else if (item.file) {
@@ -212,8 +212,8 @@ module.exports = new Promise((resolve, reject) => {
     // zrychluje proces, šetří KHS weby
     if (checkFileExists && fs.existsSync(PDFfilePath)) {
       report(khs, "PDF soubor byl nalezen, přeskakuji stahování");
-      parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData).then(()=> {
-        resolve();
+      parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData).then(() => {
+        finalize();
       });
 
     } else {
@@ -282,13 +282,16 @@ module.exports = new Promise((resolve, reject) => {
 
         // After all the data is saved
         response.on('end', function () {
-          parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData).then(()=> {
-            resolve();
+          parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData).then(() => {
+            finalize();
           });
         });
       });
     }
 
-    await browser.close();
+    async function finalize() {
+      await browser.close();
+      resolve();
+    }
   })();
 });
