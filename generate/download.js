@@ -142,7 +142,6 @@ Promise.all(promisesList).then(function (results) {
 }, function (err) {
   // an error occurred, process the error here
   console.log("");
-  console.timeEnd('download.js');
   console.log("Nastala chyba scriptů.")
 });
 

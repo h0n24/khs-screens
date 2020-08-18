@@ -163,11 +163,10 @@ function generateOCRimages() {
 function recognizeOCRimages() {
   return new Promise((resolve, reject) => {
     (async () => {
+      const scheduler = createScheduler();
+      const scheduler2 = createScheduler();
+
       try {
-
-        const scheduler = createScheduler();
-        const scheduler2 = createScheduler();
-
         const worker1 = createWorker();
         const worker2 = createWorker();
         const worker3 = createWorker();
@@ -201,7 +200,10 @@ function recognizeOCRimages() {
         await worker1.setParameters(workerParameters);
         await worker2.setParameters(workerParameters);
 
+        worker1._currentJob = null;
         scheduler.addWorker(worker1);
+
+        worker2._currentJob = null;
         scheduler.addWorker(worker2);
 
         const results = await Promise.all(OCRurl.map((url) => (
@@ -267,6 +269,8 @@ function recognizeOCRimages() {
         resolve();
       } catch (error) {
         report(khs, "Nepodařilo se rozeznat text z obrázku");
+        await scheduler.terminate(); // It also terminates all workers.
+        await scheduler2.terminate(); // It also terminates all workers.
         reject();
       }
     })();

@@ -143,104 +143,76 @@ function generateOCRimages() {
 function recognizeOCRimages(params) {
   return new Promise((resolve, reject) => {
     (async () => {
+      const scheduler = createScheduler();
       try {
         // console.log("OCR čtení přes tesseract");
-        const workerLoaded = false;
         let OCRjobs = [];
 
-        let scheduler;
-        let worker1;
-        let worker2;
-
         // načtení workerů, někdy žel blbne
-        try {
-          scheduler = createScheduler();
-          worker1 = createWorker({
-            logger: m => console.log(m), // Add logger here
-          });
-          worker2 = createWorker({
-            logger: m => console.log(m), // Add logger here
-          });
+        const worker1 = createWorker({
+          // logger: m => console.log(m), // Add logger here
+        });
+        const worker2 = createWorker({
+          // logger: m => console.log(m), // Add logger here
+        });
 
-          const workerParameters = {
-            tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-            tessedit_char_whitelist: '0123456789',
-            classify_bln_numeric_mode: true
-          };
+        const workerParameters = {
+          tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+          tessedit_char_whitelist: '0123456789',
+          classify_bln_numeric_mode: true
+        };
 
-          const worker1test = await worker1
-            .load()
-            .loadLanguage('digits-plzen')
-            .initialize('digits-plzen')
-            // .setParameters(workerParameters)
-            .catch(() => {
-              report(khs, "worker 1 má problém");
-            });
+        const worker1load = await worker1.load();
+        const worker1loadLang = await worker1.loadLanguage('digits-plzen');
+        const worker1init = await worker1.initialize('digits-plzen');
+        const worker1params = await worker1.setParameters(workerParameters);
+        const worker2load = await worker2.load();
+        const worker2loadLang = await worker2.loadLanguage('digits-plzen2');
+        const worker2init = await worker2.initialize('digits-plzen2');
+        const worker2params = await worker2.setParameters(workerParameters);
 
-          const worker2test = await worker2
-            .load()
-            .loadLanguage('digits-plzen')
-            .initialize('digits-plzen')
-            // .setParameters(workerParameters)
-            .catch(() => {
-              report(khs, "worker 2 má problém");
-            });
+        worker1._currentJob = null;
+        scheduler.addWorker(worker1);
 
-          worker1._currentJob = null;
-          await scheduler.addWorker(worker1).catch(() => {
-            report(khs, "worker 1 má problém");
-          });
+        worker2._currentJob = null;
+        scheduler.addWorker(worker2);
 
-          worker2._currentJob = null;
-          await scheduler.addWorker(worker2).catch(() => {
-            report(khs, "worker 2 má problém");
-          });
+        
+        const results = await Promise.all(OCRurl.map((url) => (
+          OCRjobs[url] = scheduler.addJob('recognize', url)
+        )))
 
-          workerLoaded = true;
-        } catch (error) {
-          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?");
+        for (const key in OCRjobs) {
+          if (OCRjobs.hasOwnProperty(key)) {
+            const OCRpromise = OCRjobs[key];
+            const {
+              text
+            } = await OCRpromise.then(result => result.data);
 
-          await scheduler.terminate();
-          reject();
-        }
+            if (text !== "") {
+              const number = parseInt(text, 10);
 
-        if (workerLoaded === true) {
-          console.log("test");
-          const results = await Promise.all(OCRurl.map((url) => (
-            OCRjobs[url] = scheduler.addJob('recognize', url)
-          )))
+              let [, okres, sub] = key.split("-");
+              [, okres] = okres.split(`/`);
+              [sub, ] = sub.split(".");
 
-          for (const key in OCRjobs) {
-            if (OCRjobs.hasOwnProperty(key)) {
-              const OCRpromise = OCRjobs[key];
-              const {
-                text
-              } = await OCRpromise.then(result => result.data);
-
-              if (text !== "") {
-                const number = parseInt(text, 10);
-
-                let [, okres, sub] = key.split("-");
-                [, okres] = okres.split(`/`);
-                [sub, ] = sub.split(".");
-
-                if (OCRjson[okres] === undefined) {
-                  OCRjson[okres] = {};
-                }
-
-                OCRjson[okres][sub] = number;
+              if (OCRjson[okres] === undefined) {
+                OCRjson[okres] = {};
               }
+
+              OCRjson[okres][sub] = number;
             }
           }
-
-          await scheduler.terminate(); // It also terminates all workers.
-
-          await generateOCRjson().then(() => {
-            resolve();
-          })
         }
+
+        await scheduler.terminate(); // It also terminates all workers.
+
+        await generateOCRjson().then(() => {
+          resolve();
+        })
       } catch (error) {
         report(khs, "Nepodařilo se rozpoznat obrázky");
+        await scheduler.terminate(); // It also terminates all workers.
         reject();
       }
     })();
