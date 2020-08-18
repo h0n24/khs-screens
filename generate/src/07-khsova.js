@@ -178,18 +178,12 @@ function recognizeOCRimages() {
         // Tesseract OCR dat -------------------------------------------------------
         // OCR: veškerá data
         await worker1.load();
-        await worker2.load();
+        await worker1.loadLanguage('digits-ova');
+        await worker1.initialize('digits-ova');
 
-        // bylo původně eng
-        try {
-          await worker1.loadLanguage('digits-ova');
-          await worker2.loadLanguage('digits-ova');
-          await worker1.initialize('digits-ova');
-          await worker2.initialize('digits-ova');
-        } catch (error) {
-          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?");
-          reject();
-        }
+        await worker2.load();
+        await worker2.loadLanguage('digits-ova2');
+        await worker2.initialize('digits-ova2');
 
         const workerParameters = {
           tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",

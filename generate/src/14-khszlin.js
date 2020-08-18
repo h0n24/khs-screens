@@ -15,10 +15,10 @@ const report = require('./_report');
 const khs = "14-khszlin";
 
 const OCRpozice = {
-  "1": [155, 500, 120, 305],
-  "2": [290, 500, 120, 305],
-  "3": [425, 500, 120, 305],
-  "4": [560, 500, 120, 305],
+  "1": [155, 490, 120, 305],
+  "2": [290, 490, 120, 305],
+  "3": [425, 490, 120, 305],
+  "4": [560, 490, 120, 305],
 }
 
 let OCRurl = [];
@@ -184,15 +184,11 @@ function recognizeOCRimages() {
         await worker2.load();
 
         // bylo původně eng
-        try {
-          await worker1.loadLanguage('digits-zlin');
-          await worker2.loadLanguage('digits-zlin');
-          await worker1.initialize('digits-zlin');
-          await worker2.initialize('digits-zlin');
-        } catch (error) {
-          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?");
-          reject();
-        }
+        await worker1.loadLanguage('digits-zlin');
+        await worker1.initialize('digits-zlin');
+
+        await worker2.loadLanguage('digits-zlin2');
+        await worker2.initialize('digits-zlin2');
 
         const workerParameters = {
           tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
@@ -200,11 +196,14 @@ function recognizeOCRimages() {
           classify_bln_numeric_mode: true
         };
 
+        // { lang: path.resolve(__dirname, 'langs/3.02/spa') }
+
         await worker1.setParameters(workerParameters);
         await worker2.setParameters(workerParameters);
 
         worker1._currentJob = null;
         scheduler.addWorker(worker1);
+
         worker2._currentJob = null;
         scheduler.addWorker(worker2);
 

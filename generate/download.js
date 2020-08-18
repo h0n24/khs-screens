@@ -17,6 +17,11 @@ function errorHappened(arg) {
   console.log(title, arg);
 }
 
+// process.on('unhandledRejection', error => {
+//   console.log('unhandledRejection', error);
+// });
+
+
 // --- vytvořit základ pro datové json soubory ---------------------------------
 function createNewFileOrSkip(file) {
   return new Promise((resolve, reject) => {
@@ -124,7 +129,8 @@ if (testing) {
     return seznamKHS[number];
   }
 
-  promisesList = [require(`./src/${khsn("7")}`), require(`./src/${khsn("10")}`), require(`./src/${khsn("14")}`)];
+  promisesList = [require(`./src/${khsn("1")}`)];
+  // promisesList = [require(`./src/${khsn("7")}`), require(`./src/${khsn("10")}`), require(`./src/${khsn("14")}`)];
 } else {
   // jednotlivé scripty pro khs
   promisesList = runOnlyOutdated();
@@ -153,6 +159,10 @@ Promise.all(promisesList).then(function (results) {
 // dopočítat některá data z oficiální API
 // dodělat - porovnání s API z ministerstva
 // automatizace přes apify (půjde?)
+
+// otestování dat mezi sebou tam, kde to jde (podobně jako khscb) 
+// a přidávat do errors.json, pokud nesedí
+// ukázka: U okresu ${okres} nesedí pozitivni = vyleceni - aktivni - umrti!
 
 // isdown api? - kontrolovat favicony, případně podobně malé části
 // https://api-prod.downfor.cloud/httpcheck/http://www.khsova.cz
