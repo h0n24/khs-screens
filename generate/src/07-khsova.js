@@ -44,103 +44,117 @@ let OCRjson = {};
 
 function generateOCRimage(crop, saveToFile) {
   sharpPromises.push(new Promise((resolve, reject) => {
-
-    // treshold 180 zbarví pixely pod 180 do černé, 
-    // zbytek bílá
-    sharp('out/07-khsova-ocr.png')
-      .extract({
-        left: crop[0],
-        top: crop[1],
-        width: crop[2],
-        height: crop[3]
-      })
-      .resize({
-        height: 100
-      })
-      .sharpen(100)
-      .modulate({
-        brightness: 1.5,
-        saturation: 0.5,
-        // hue: 180
-      })
-      .normalise(true)
-      .threshold(110) // 158 nebo 161
-      .toFile(saveToFile, function (err) {
-        if (err) throw (err);
-        OCRurl.push(saveToFile);
-        resolve();
-      })
+    try {
+      // treshold 180 zbarví pixely pod 180 do černé, 
+      // zbytek bílá
+      sharp('out/07-khsova-ocr.png')
+        .extract({
+          left: crop[0],
+          top: crop[1],
+          width: crop[2],
+          height: crop[3]
+        })
+        .resize({
+          height: 100
+        })
+        .sharpen(100)
+        .modulate({
+          brightness: 1.5,
+          saturation: 0.5,
+          // hue: 180
+        })
+        .normalise(true)
+        .threshold(110) // 158 nebo 161
+        .toFile(saveToFile, function (err) {
+          if (err) throw (err);
+          OCRurl.push(saveToFile);
+          resolve();
+        })
+    } catch (error) {
+      report(khs, "Nepodařilo se vytvořit ořezy obrázků k OCR (pro data)");
+      reject();
+    }
   }));
 }
 
 function generateOCRimageDate(crop, saveToFile) {
   sharpPromises.push(new Promise((resolve, reject) => {
+    try {
+      // treshold 180 zbarví pixely pod 180 do černé, 
+      // zbytek bílá
+      sharp('out/07-khsova-ocr.png')
+        .extract({
+          left: crop[0],
+          top: crop[1],
+          width: crop[2],
+          height: crop[3]
+        })
+        .resize({
+          height: 100
+        })
+        .sharpen(100)
+        .modulate({
+          brightness: 1.0,
+          saturation: 1.5,
+          // hue: 180
+        })
+        .normalise(true)
+        .threshold(161) // 158 nebo 161
+        .toFile(saveToFile, function (err) {
+          if (err) throw (err);
+          resolve();
+        })
+    } catch (error) {
+      report(khs, "Nepodařilo se vytvořit ořezy obrázků k OCR (pro datum)");
+      reject();
+    }
 
-    // treshold 180 zbarví pixely pod 180 do černé, 
-    // zbytek bílá
-    sharp('out/07-khsova-ocr.png')
-      .extract({
-        left: crop[0],
-        top: crop[1],
-        width: crop[2],
-        height: crop[3]
-      })
-      .resize({
-        height: 100
-      })
-      .sharpen(100)
-      .modulate({
-        brightness: 1.0,
-        saturation: 1.5,
-        // hue: 180
-      })
-      .normalise(true)
-      .threshold(161) // 158 nebo 161
-      .toFile(saveToFile, function (err) {
-        if (err) throw (err);
-        resolve();
-      })
   }));
 }
 
 function generateOCRimages() {
   return new Promise((resolve, reject) => {
-    // zkontroluje jestli složka existuje
-    var directory = `temp/${khs}/`;
-    if (!fs.existsSync(directory)) {
-      fs.mkdirSync(directory);
-    }
-
-    // synchronní mazání obsahu složky
-    const files = fs.readdirSync(directory);
-    for (const file of files) {
-      fs.unlink(path.join(directory, file), err => {
-        if (err) throw err;
-      });
-    }
-
-    // vygenerujeme obrázky pro OCR (co nejmenší, černá, kontrast apod.)
-    for (const pozice in OCRpozice) {
-      if (OCRpozice.hasOwnProperty(pozice)) {
-        const crop = OCRpozice[pozice];
-        const saveToFile = `${directory}${pozice}.png`;
-        generateOCRimage(crop, saveToFile);
+    try {
+      // zkontroluje jestli složka existuje
+      var directory = `temp/${khs}/`;
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
       }
+
+      // synchronní mazání obsahu složky
+      const files = fs.readdirSync(directory);
+      for (const file of files) {
+        fs.unlink(path.join(directory, file), err => {
+          if (err) throw err;
+        });
+      }
+
+      // vygenerujeme obrázky pro OCR (co nejmenší, černá, kontrast apod.)
+      for (const pozice in OCRpozice) {
+        if (OCRpozice.hasOwnProperty(pozice)) {
+          const crop = OCRpozice[pozice];
+          const saveToFile = `${directory}${pozice}.png`;
+          generateOCRimage(crop, saveToFile);
+        }
+      }
+
+      // vygenerujeme obrázek pro čtení data
+      const saveToFile = `${directory}date.png`;
+      generateOCRimageDate(OCRpoziceDatum, saveToFile);
+
+      // počkáme, až se všechny obrázky vygenerují
+      Promise.all(sharpPromises)
+        .then(() => {
+          (async () => {
+            // console.log('OCR obrázky vygenerovány');
+            await recognizeOCRimages();
+            resolve();
+          })();
+        })
+    } catch (error) {
+      report(khs, "Nepodařilo se vygenerovat všechny OCR obrázky");
+      reject();
     }
-
-    // vygenerujeme obrázek pro čtení data
-    const saveToFile = `${directory}date.png`;
-    generateOCRimageDate(OCRpoziceDatum, saveToFile);
-
-    // počkáme, až se všechny obrázky vygenerují
-    Promise.all(sharpPromises)
-      .then(() => {
-        (async () => {
-          // console.log('OCR obrázky vygenerovány');
-          await recognizeOCRimages();
-          resolve();
-        })();
-      })
   });
 }
 
@@ -149,109 +163,118 @@ function generateOCRimages() {
 function recognizeOCRimages() {
   return new Promise((resolve, reject) => {
     (async () => {
+      try {
 
-      const scheduler = createScheduler();
-      const scheduler2 = createScheduler();
+        const scheduler = createScheduler();
+        const scheduler2 = createScheduler();
 
-      const worker1 = createWorker();
-      const worker2 = createWorker();
-      const worker3 = createWorker();
+        const worker1 = createWorker();
+        const worker2 = createWorker();
+        const worker3 = createWorker();
 
-      // console.log("OCR čtení přes tesseract");
+        // console.log("OCR čtení přes tesseract");
 
-      let OCRjobs = [];
+        let OCRjobs = [];
 
-      // Tesseract OCR dat -------------------------------------------------------
-      // OCR: veškerá data
-      await worker1.load();
-      await worker2.load();
+        // Tesseract OCR dat -------------------------------------------------------
+        // OCR: veškerá data
+        await worker1.load();
+        await worker2.load();
 
-      // bylo původně eng
-      await worker1.loadLanguage('digits-ova');
-      await worker2.loadLanguage('digits-ova');
-      await worker1.initialize('digits-ova');
-      await worker2.initialize('digits-ova');
+        // bylo původně eng
+        try {
+          await worker1.loadLanguage('digits-ova');
+          await worker2.loadLanguage('digits-ova');
+          await worker1.initialize('digits-ova');
+          await worker2.initialize('digits-ova');
+        } catch (error) {
+          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?")
+        }
 
-      const workerParameters = {
-        tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
-        tessedit_char_whitelist: '0123456789',
-        classify_bln_numeric_mode: true
-      };
+        const workerParameters = {
+          tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+          tessedit_char_whitelist: '0123456789',
+          classify_bln_numeric_mode: true
+        };
 
-      await worker1.setParameters(workerParameters);
-      await worker2.setParameters(workerParameters);
+        await worker1.setParameters(workerParameters);
+        await worker2.setParameters(workerParameters);
 
-      scheduler.addWorker(worker1);
-      scheduler.addWorker(worker2);
+        scheduler.addWorker(worker1);
+        scheduler.addWorker(worker2);
 
-      const results = await Promise.all(OCRurl.map((url) => (
-        OCRjobs[url] = scheduler.addJob('recognize', url)
-      )))
+        const results = await Promise.all(OCRurl.map((url) => (
+          OCRjobs[url] = scheduler.addJob('recognize', url)
+        )))
 
-      for (const key in OCRjobs) {
-        if (OCRjobs.hasOwnProperty(key)) {
-          const OCRpromise = OCRjobs[key];
-          const {
-            text
-          } = await OCRpromise.then(result => result.data);
+        for (const key in OCRjobs) {
+          if (OCRjobs.hasOwnProperty(key)) {
+            const OCRpromise = OCRjobs[key];
+            const {
+              text
+            } = await OCRpromise.then(result => result.data);
 
-          if (text !== "") {
-            const number = parseInt(text, 10);
+            if (text !== "") {
+              const number = parseInt(text, 10);
 
-            let [, okres, sub] = key.split("-");
-            [, okres] = okres.split(`/`);
-            [sub, ] = sub.split(".");
+              let [, okres, sub] = key.split("-");
+              [, okres] = okres.split(`/`);
+              [sub, ] = sub.split(".");
 
-            if (OCRjson[okres] === undefined) {
-              OCRjson[okres] = {};
+              if (OCRjson[okres] === undefined) {
+                OCRjson[okres] = {};
+              }
+
+              OCRjson[okres][sub] = number;
             }
-
-            OCRjson[okres][sub] = number;
           }
         }
+
+        // OCR: pouze čas
+        await worker3.load();
+
+        // musí být eng, protože chceme detekovat i tečky a dvojtečky
+        await worker3.loadLanguage('eng');
+        await worker3.initialize('eng');
+
+        const workerParametersDate = {
+          tessedit_char_blacklist: "!?@#$%&*()<>_-+=/;'\"ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz",
+          tessedit_char_whitelist: '0123456789.:,Vv',
+          // classify_bln_numeric_mode: true
+        };
+
+        await worker3.setParameters(workerParametersDate);
+        scheduler2.addWorker(worker3);
+
+        const recognizeDate = scheduler2.addJob('recognize', `temp/${khs}/date.png`);
+        const parsedDateData = await recognizeDate.then(result => result.data);
+
+        // ukončení procesů
+        await scheduler.terminate(); // It also terminates all workers.
+        await scheduler2.terminate(); // It also terminates all workers.
+
+        // zpracování dat ----------------------------------------------------------
+        // samotná data
+        generateOCRjson();
+
+        // čas
+        generateTimeJson(parsedDateData);
+
+        // finální report
+        report(khs, "OK");
+
+        resolve();
+      } catch (error) {
+        report(khs, "Nepodařilo se rozeznat text z obrázku");
+        reject();
       }
-
-      // OCR: pouze čas
-      await worker3.load();
-
-      // musí být eng, protože chceme detekovat i tečky a dvojtečky
-      await worker3.loadLanguage('eng');
-      await worker3.initialize('eng');
-
-      const workerParametersDate = {
-        tessedit_char_blacklist: "!?@#$%&*()<>_-+=/;'\"ABCDEFGHIJKLMNOPQRSTUWXYZabcdefghijklmnopqrstuwxyz",
-        tessedit_char_whitelist: '0123456789.:,Vv',
-        // classify_bln_numeric_mode: true
-      };
-
-      await worker3.setParameters(workerParametersDate);
-      scheduler2.addWorker(worker3);
-
-      const recognizeDate = scheduler2.addJob('recognize', `temp/${khs}/date.png`);
-      const parsedDateData = await recognizeDate.then(result => result.data);
-
-      // ukončení procesů
-      await scheduler.terminate(); // It also terminates all workers.
-      await scheduler2.terminate(); // It also terminates all workers.
-
-      // zpracování dat ----------------------------------------------------------
-      // samotná data
-      generateOCRjson();
-
-      // čas
-      generateTimeJson(parsedDateData);
-
-      // finální report
-      report(khs, "OK");
-
-      resolve();
     })();
   });
 }
 
 // --- Generování finálního json ------------------------------------------------
 
-function generateOCRjson(params) {
+function generateOCRjson() {
 
   // zpracování dat
   const obyvatelstvo = {
@@ -342,7 +365,7 @@ module.exports = new Promise((resolve, reject) => {
   (async () => {
     const OCRfilePath = "out/07-khsova-ocr.png";
 
-    const checkFileExists = false;
+    const checkFileExists = true;
 
     // někdy se stránka khsova nedá načíst pod méně než 30s,
     // je tedy dobré manuálně stáhnout slider a vložit ho do složky out
@@ -355,54 +378,71 @@ module.exports = new Promise((resolve, reject) => {
         resolve();
       });
     } else {
-
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
       let pageLoaded = true;
+      let url;
 
-      await page.setViewport({
-        width: 1200,
-        height: 850
-      });
+      try {
+        const browser = await puppeteer.launch();
+        const page = await browser.newPage();
 
-      await page.goto('http://www.khsova.cz/', {
-        waitUntil: 'networkidle2'
-      }).catch(e => {
-        report(khs, e);
-        pageLoaded = false;
-      });
+        await page.setViewport({
+          width: 1200,
+          height: 850
+        });
 
-      if (pageLoaded) {
+        await page.goto('http://www.khsova.cz/', {
+          waitUntil: 'networkidle2'
+        }).catch(e => {
+          report(khs, e);
+          pageLoaded = false;
+        });
 
-        // hledání url s obrázkem (každý den se URL mění)
-        const url = await page.evaluate(() => {
-          let images = document.querySelectorAll(".tp-kbimg");
-          let arr = Array.prototype.slice.call(images);
-          for (let i = 0; i < arr.length; i += 1) {
-            if (arr[i].src.includes('www.khsova.cz/sliders/slider_mapa_koronavirus')) {
-              return images[0].src;
+        if (pageLoaded) {
+          // hledání url s obrázkem (každý den se URL mění)
+          url = await page.evaluate(() => {
+            try {
+              let images = document.querySelectorAll(".tp-kbimg");
+              let arr = Array.prototype.slice.call(images);
+              for (let i = 0; i < arr.length; i += 1) {
+                if (arr[i].src.includes('www.khsova.cz/sliders/slider_mapa_koronavirus')) {
+                  return images[0].src;
+                }
+              } 
+            } catch (error) {
+              
             }
-          }
-        });
-
-        // stažení verze pro OCR 
-        const file = fs.createWriteStream(OCRfilePath);
-        const request = http.get(url, function (response) {
-          response.pipe(file);
-        });
-
-        file.on('finish', function () {
-          // report(khs, "OCR soubor stažen");
-          // inicializace
-          generateOCRimages().then(() => {
-            finalize();
+          }).catch(e => {
+            report(khs, e);
+            pageLoaded = false;
           });
-        });
+        }
+
+        // uvolníme puppeteer co nejdříve
+        await browser.close();
+      } catch (error) {
+        report(khs, "Nepodařilo se z khsova.cz stáhnout slider s mapou koronaviru.");
+        reject();
       }
 
-      async function finalize() {
-        await browser.close();
-        resolve();
+      if (pageLoaded && url !== undefined) {
+        // stažení verze pro OCR 
+        try {
+          const file = fs.createWriteStream(OCRfilePath);
+          const request = http.get(url, function (response) {
+            response.pipe(file);
+          });
+
+          file.on('finish', function () {
+            // report(khs, "OCR soubor stažen");
+            // inicializace
+            generateOCRimages().then(() => {
+              resolve();
+            });
+          });
+        } catch (error) {
+          report(khs, "Nepodařilo se stáhnout obrázek k OCR");
+          reject();
+        }
       }
     }
   })();

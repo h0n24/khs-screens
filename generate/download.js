@@ -118,7 +118,7 @@ if (testing) {
     return seznamKHS[number];
   }
 
-  promisesList = [require(`./src/${khsn("10")}`)];
+  promisesList = [require(`./src/${khsn("7")}`), require(`./src/${khsn("10")}`), require(`./src/${khsn("14")}`)];
 } else {
   // jednotlivé scripty pro khs
   promisesList = runOnlyOutdated();
