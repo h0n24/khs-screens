@@ -188,7 +188,8 @@ function recognizeOCRimages() {
           await worker1.initialize('digits-ova');
           await worker2.initialize('digits-ova');
         } catch (error) {
-          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?")
+          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?");
+          reject();
         }
 
         const workerParameters = {

@@ -185,10 +185,15 @@ function recognizeOCRimages() {
         await worker2.load();
 
         // bylo původně eng
-        await worker1.loadLanguage('digits-zlin');
-        await worker2.loadLanguage('digits-zlin');
-        await worker1.initialize('digits-zlin');
-        await worker2.initialize('digits-zlin');
+        try {
+          await worker1.loadLanguage('digits-zlin');
+          await worker2.loadLanguage('digits-zlin');
+          await worker1.initialize('digits-zlin');
+          await worker2.initialize('digits-zlin');
+        } catch (error) {
+          report(khs, "worker 1 nebo 2 se nenačetly, je soubor používán?");
+          reject();
+        }
 
         const workerParameters = {
           tessedit_char_blacklist: "!?@#$%&*()<>_-+=/:;'\"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
