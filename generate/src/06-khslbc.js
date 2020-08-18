@@ -87,50 +87,51 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal) {
 }
 
 function parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData) {
-  // ve zbytku pdfData lze nalézt poslední datum aktualizace
+  return new Promise((resolve, reject) => {
+    // ve zbytku pdfData lze nalézt poslední datum aktualizace
 
-  for (let index = 0; index < pdfDataOkresy.length; index++) {
-    const okres = pdfDataOkresy[index];
-    const obyvatel = obyvatelstvo[okres];
+    for (let index = 0; index < pdfDataOkresy.length; index++) {
+      const okres = pdfDataOkresy[index];
+      const obyvatel = obyvatelstvo[okres];
 
-    let pozitivni = null;
-    let vyleceni = null;
-    let aktivni = null;
+      let pozitivni = null;
+      let vyleceni = null;
+      let aktivni = null;
 
-    for (const key in pdfFinal) {
-      if (pdfFinal.hasOwnProperty(key)) {
-        const element = pdfFinal[key];
-        const [category] = Object.keys(element);
+      for (const key in pdfFinal) {
+        if (pdfFinal.hasOwnProperty(key)) {
+          const element = pdfFinal[key];
+          const [category] = Object.keys(element);
 
-        if (category === 'c') {
-          pozitivni = element[category][index];
-          pozitivni = parseInt(pozitivni, 10);
-        }
-        if (category === 'h') {
-          vyleceni = element[category][index];
-          vyleceni = parseInt(vyleceni, 10);
-        }
-        if (category === 'a') {
-          aktivni = element[category][index];
-          aktivni = parseInt(aktivni, 10);
+          if (category === 'c') {
+            pozitivni = element[category][index];
+            pozitivni = parseInt(pozitivni, 10);
+          }
+          if (category === 'h') {
+            vyleceni = element[category][index];
+            vyleceni = parseInt(vyleceni, 10);
+          }
+          if (category === 'a') {
+            aktivni = element[category][index];
+            aktivni = parseInt(aktivni, 10);
+          }
         }
       }
+
+      let umrti = null;
+      if (Number.isInteger(pozitivni) && Number.isInteger(aktivni) && Number.isInteger(vyleceni)) {
+        umrti = pozitivni - aktivni - vyleceni;
+      }
+
+      preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
     }
 
-    let umrti = null;
-    if (Number.isInteger(pozitivni) && Number.isInteger(aktivni) && Number.isInteger(vyleceni)) {
-      umrti = pozitivni - aktivni - vyleceni;
-    }
+    // finálně uloží data do souboru
+    saveToFile(preparedData);
 
-    preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
-  }
-
-  // finálně uloží data do souboru
-  saveToFile(preparedData);
-
-  report(khs, "OK");
-
-  resolve();
+    report(khs, "OK");
+    resolve();
+  });
 }
 
 function saveToFile(data) {
@@ -140,25 +141,29 @@ function saveToFile(data) {
 }
 
 function parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData) {
-  new PdfReader().parseFileItems(PDFfilePath, function (err, item) {
-    if (err) {
-      console.error(err);
-    } else if (!item) {
-      /* pdfreader queues up the items in the PDF and passes them to
-       * the callback. When no item is passed, it's indicating that
-       * we're done reading the PDF. */
-      // console.log('Done.');
-      parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData);
-    } else if (item.file) {
-      // File items only reference the PDF's file path.
-      // console.log(`Parsing ${item.file && item.file.path || 'a buffer'}`)
-    } else if (item.page) {
-      // Page items simply contain their page number.
-      // console.log(`Reached page ${item.page}`);
-    } else if (item.text) {
-      // Goes through every item in the pdf file
-      parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal);
-    }
+  return new Promise((resolve, reject) => {
+    new PdfReader().parseFileItems(PDFfilePath, function (err, item) {
+      if (err) {
+        console.error(err);
+      } else if (!item) {
+        /* pdfreader queues up the items in the PDF and passes them to
+         * the callback. When no item is passed, it's indicating that
+         * we're done reading the PDF. */
+        // console.log('Done.');
+        parsePDFafter(pdfData, pdfDataOkresy, pdfFinal, preparedData).then(()=> {
+          resolve();
+        });
+      } else if (item.file) {
+        // File items only reference the PDF's file path.
+        // console.log(`Parsing ${item.file && item.file.path || 'a buffer'}`)
+      } else if (item.page) {
+        // Page items simply contain their page number.
+        // console.log(`Reached page ${item.page}`);
+      } else if (item.text) {
+        // Goes through every item in the pdf file
+        parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal);
+      }
+    });
   });
 }
 
@@ -207,7 +212,9 @@ module.exports = new Promise((resolve, reject) => {
     // zrychluje proces, šetří KHS weby
     if (checkFileExists && fs.existsSync(PDFfilePath)) {
       report(khs, "PDF soubor byl nalezen, přeskakuji stahování");
-      parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData);
+      parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData).then(()=> {
+        resolve();
+      });
 
     } else {
 
@@ -275,7 +282,9 @@ module.exports = new Promise((resolve, reject) => {
 
         // After all the data is saved
         response.on('end', function () {
-          parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData);
+          parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData).then(()=> {
+            resolve();
+          });
         });
       });
     }
