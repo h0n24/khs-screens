@@ -32,56 +32,61 @@ function addOnlyUnique(jmenoOkresu, pdfDataOkresy) {
   }
 }
 
-function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal) {
+function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal, pdfPage) {
 
-  if (item.text === "Onemocnění COVID") {
+  // přeskakuje se vše co není na hlavní stránce
+  // a vše, co je níže než 25 na ose Y
+  if (pdfPage === 1 && item.y < 25) {
+    if (item.text === "19 v LK") {
+      // původní lámaná verze
+    } else if (item.text === "-") {
+      // původní lámaná verze
+    } else if (item.text.includes("Onemocnění")) {
+      // celá verze
+    } else if (item.text.includes("Aktualizace ")) {
+      // nově: aktualizace
+    } else if (item.text === "Počty případů, aktivních případů, uzdravených osob dle okresů") {
+      // eliminace nadpisu
+    } else if (item.text.includes("Lípa")) {
+      addOnlyUnique("Česká Lípa", pdfDataOkresy);
+  
+    } else if (item.text.includes("Jablonec")) {
+      addOnlyUnique("Jablonec nad Nisou", pdfDataOkresy);
+  
+    } else if (item.text.includes("Liberec")) {
+      addOnlyUnique("Liberec", pdfDataOkresy);
+  
+    } else if (item.text.includes("Semily")) {
+      addOnlyUnique("Semily", pdfDataOkresy);
+  
+    } else if (item.text.includes('počet případů onemocnění')) {
 
-  } else if (item.text === "19 v LK") {
+      const tempData = pdfData.slice(0, 4);
+      pdfFinal.push({
+        c: tempData
+      });
+      pdfData.splice(0, 4);
+  
+    } else if (item.text.includes('aktivních případů dle')) {
+  
+      const tempData = pdfData.slice(0, 4);
+      pdfFinal.push({
+        a: tempData
+      });
+      pdfData.splice(0, 4);
+  
+    } else if (item.text.includes('uzdravených osob dle')) {
+  
+      const tempData = pdfData.slice(0, 4);
+      pdfFinal.push({
+        h: tempData
+      });
+      pdfData.splice(0, 4);
+  
+    } else {
 
-  } else if (item.text === "-") {
-
-  } else if (item.text === "Česká Lípa") {
-    addOnlyUnique("Česká Lípa", pdfDataOkresy);
-
-  } else if (item.text === "Jablonec n/N") {
-    addOnlyUnique("Jablonec nad Nisou", pdfDataOkresy);
-
-  } else if (item.text === "Liberec") {
-    addOnlyUnique("Liberec", pdfDataOkresy);
-
-  } else if (item.text === "Semily") {
-    addOnlyUnique("Semily", pdfDataOkresy);
-
-  } else if (item.text === 'kumulativní počet případů onemocnění dle okresů') {
-
-    const tempData = pdfData.slice(0, 4);
-    pdfFinal.push({
-      c: tempData
-    });
-    pdfData.splice(0, 4);
-
-  } else if (item.text === 'počet aktivních případů dle okresů') {
-
-    const tempData = pdfData.slice(0, 4);
-    pdfFinal.push({
-      a: tempData
-    });
-    pdfData.splice(0, 4);
-
-  } else if (item.text === 'počet uzdravených osob dle okresů') {
-
-    const tempData = pdfData.slice(0, 4);
-    pdfFinal.push({
-      h: tempData
-    });
-    pdfData.splice(0, 4);
-
-  } else {
-
-    // je třeba přeskočit všechna data ze spodní části pdf, 
-    // protože tam se objevuje "aktualizováno v" 
-    if (item.y < 33) {
       pdfData.push(item.text);
+      // console.log(pdfPage, item.text, item.y);
     }
   }
 }
@@ -142,6 +147,7 @@ function saveToFile(data) {
 
 function parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData) {
   return new Promise((resolve, reject) => {
+    let pdfPage = 0;
     new PdfReader().parseFileItems(PDFfilePath, function (err, item) {
       if (err) {
         console.error(err);
@@ -159,9 +165,10 @@ function parsePDF(PDFfilePath, pdfData, pdfDataOkresy, pdfFinal, preparedData) {
       } else if (item.page) {
         // Page items simply contain their page number.
         // console.log(`Reached page ${item.page}`);
+        pdfPage = item.page;
       } else if (item.text) {
         // Goes through every item in the pdf file
-        parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal);
+        parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal, pdfPage);
       }
     });
   });
@@ -230,7 +237,7 @@ module.exports = new Promise((resolve, reject) => {
         let arr = Array.prototype.slice.call(names);
         for (let i = 0; i < arr.length; i += 1) {
 
-          if (arr[i].innerHTML.includes('Onemocnění COVID-19 v LK dle okresů')) {
+          if (arr[i].innerHTML.includes('Počty onemocnění dle okresů LK')) {
             return arr[i].href;
           }
         }
