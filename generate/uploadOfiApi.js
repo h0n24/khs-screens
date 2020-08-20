@@ -172,12 +172,12 @@ function parseData(data) {
 }
 
 function sortData(data) {
-  let preparedData = [];
+  let preparedData = {};
 
   for (const datum in data) {
     if (data.hasOwnProperty(datum)) {
       const den = data[datum];
-      preparedData[datum] = [];
+      preparedData[datum] = {};
 
       for (let index = 0; index < okresyDocs.length; index++) {
         const okresDocs = okresyDocs[index];
@@ -194,11 +194,20 @@ function sortData(data) {
     }
   }
   
+  // příprava dat
   prepareData(preparedData);
 
-  // console.log(preparedData)
-  // console.log("data pripravena");
+  // uložení do minifikovaného jsonu
+  saveJson(preparedData);
+
+  // console.log(preparedData);
+  // příprava k autentifikaci a na upload na Gdocs
   startAuth();
+}
+
+function saveJson(data) {
+  const writeData = JSON.stringify(data);
+  fs.writeFileSync("out/ofi-api.min.json", writeData);
 }
 
 // -----------------------------------------------------------------------------
