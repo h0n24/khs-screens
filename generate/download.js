@@ -99,7 +99,7 @@ function runOnlyOutdated() {
     const lastTime = readTime[index];
     
     let lastDay = null;
-    if (lastTime !== undefined) {
+    if (lastTime !== undefined && lastTime !== null) {
       lastDay = lastTime.toString().substring(0, 10);
     }
     
@@ -129,7 +129,7 @@ if (testing) {
     return seznamKHS[number];
   }
 
-  promisesList = [require(`./src/${khsn("1")}`)];
+  promisesList = [require(`./src/${khsn("06")}`)];
   // promisesList = [require(`./src/${khsn("7")}`), require(`./src/${khsn("10")}`), require(`./src/${khsn("14")}`)];
 } else {
   // jednotlivé scripty pro khs
@@ -154,15 +154,32 @@ Promise.all(promisesList).then(function (results) {
 
 
 // todo ------------------------------------------------------------------------
-// refactor: exposeFunction pro clean
-// puppeteer - tor
+
+// zlín - detekovat automaticky x/y pozice grafu
+
 // dopočítat některá data z oficiální API
-// dodělat - porovnání s API z ministerstva
-// automatizace přes apify (půjde?)
+// + automatizovat verifikaci listů -> pokud sedí, rozřadit
+
+// big puppeteer refactor:
+// -> https://www.youtube.com/watch?v=MbnATLCuKI4
+// - exposeFunction pro clean
+// - puppeteer - tor
+
+// puppeteer může být rychlejší přes
+// const context = await browser.createIncognitoBrowserContext();
+// await context.close();
+
+// -> lze blokovat některé requesty (zrychlení stahování)
+// const metrics = await page.metrics();
+// console.log(metrics);
 
 // otestování dat mezi sebou tam, kde to jde (podobně jako khscb) 
 // a přidávat do errors.json, pokud nesedí
 // ukázka: U okresu ${okres} nesedí pozitivni = vyleceni - aktivni - umrti!
 
+// todo: praha se dá ověřovat s json api
+
 // isdown api? - kontrolovat favicony, případně podobně malé části
 // https://api-prod.downfor.cloud/httpcheck/http://www.khsova.cz
+
+// automatizace přes apify (půjde?)

@@ -197,7 +197,14 @@ module.exports = new Promise((resolve, reject) => {
         tempTime = tempTime.replace(/\s+/g,' ');
 
         // dne <datum>, <čas>
-        [,tempTime] = tempTime.split("dne"); 
+        // ale bývá i dni
+        if (tempTime.includes("dne")) {
+          [,tempTime] = tempTime.split("dne");
+        }
+
+        if (tempTime.includes("dni")) {
+          [,tempTime] = tempTime.split("dni");
+        }
         let [date, time] = tempTime.split(",");
 
         date = date.replace(/[^0-9.]/g, "");
