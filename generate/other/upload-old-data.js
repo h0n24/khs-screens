@@ -70,15 +70,20 @@ function getNewToken(oAuth2Client, callback) {
 // -----------------------------------------------------------------------------
 // samotná práce s daty na Google Docs
 
-const spreadsheetId = '1FFEDhS6VMWon_AWkJrf8j3XxjZ4J6UI1B2lO3IW-EEc';
+// const spreadsheetId = '1FFEDhS6VMWon_AWkJrf8j3XxjZ4J6UI1B2lO3IW-EEc'; // originální
+const spreadsheetId = '1L79-kezR4PgWBf4RMJtxorrpnT4sOQ1HhUI25R2WwBQ'; // testovací
+
 
 // globální proměnná - sledovaná proměnná
 // h nebo d nebo a (vyléčení, mrtví, aktivní)
 // alternativně pro test: c
-const gCat = "a";
+const gCat = "h";
 
 // globální proměnná - seřazené okresy
-const sortedOkresy = ["České Budějovice", "Český Krumlov", "Jindřichův Hradec", "Písek", "Prachatice", "Strakonice", "Tábor", "Brno-město", "Brno-venkov", "Blansko", "Břeclav", "Hodonín", "Vyškov", "Znojmo", "Karlovy Vary", "Sokolov", "Cheb", "Jihlava", "Havlíčkův Brod", "Pelhřimov", "Třebíč", "Žďár nad Sázavou", "Hradec Králové", "Jičín", "Náchod", "Rychnov nad Kněžnou", "Trutnov", "Česká Lípa", "Jablonec nad Nisou", "Liberec", "Semily", "Bruntál", "Opava", "Nový Jičín", "Ostrava", "Karviná", "Frýdek-Místek", "Olomouc", "Prostějov", "Přerov", "Šumperk", "Jeseník", "Pardubice", "Chrudim", "Svitavy", "Ústí nad Orlicí", "Tachov", "Plzeň-sever", "Plzeň-město", "Rokycany", "Plzeň-jih", "Domažlice", "Klatovy", "Praha", "Rakovník", "Kladno", "Mělník", "Mladá Boleslav", "Nymburk", "Kolín", "Kutná Hora", "Benešov", "Příbram", "Beroun", "Praha-západ", "Praha-východ", "Děčín", "Chomutov", "Most", "Litoměřice", "Louny", "Teplice", "Ústí nad Labem", "Kroměříž", "Uherské Hradiště", "Vsetín", "Zlín"];
+// let sortedOkresy = ["České Budějovice", "Český Krumlov", "Jindřichův Hradec", "Písek", "Prachatice", "Strakonice", "Tábor", "Brno-město", "Brno-venkov", "Blansko", "Břeclav", "Hodonín", "Vyškov", "Znojmo", "Karlovy Vary", "Sokolov", "Cheb", "Jihlava", "Havlíčkův Brod", "Pelhřimov", "Třebíč", "Žďár nad Sázavou", "Hradec Králové", "Jičín", "Náchod", "Rychnov nad Kněžnou", "Trutnov", "Česká Lípa", "Jablonec nad Nisou", "Liberec", "Semily", "Bruntál", "Opava", "Nový Jičín", "Ostrava", "Karviná", "Frýdek-Místek", "Olomouc", "Prostějov", "Přerov", "Šumperk", "Jeseník", "Pardubice", "Chrudim", "Svitavy", "Ústí nad Orlicí", "Tachov", "Plzeň-sever", "Plzeň-město", "Rokycany", "Plzeň-jih", "Domažlice", "Klatovy", "Praha", "Rakovník", "Kladno", "Mělník", "Mladá Boleslav", "Nymburk", "Kolín", "Kutná Hora", "Benešov", "Příbram", "Beroun", "Praha-západ", "Praha-východ", "Děčín", "Chomutov", "Most", "Litoměřice", "Louny", "Teplice", "Ústí nad Labem", "Kroměříž", "Uherské Hradiště", "Vsetín", "Zlín"];
+
+// ostava-město verze
+let sortedOkresy = ["České Budějovice", "Český Krumlov", "Jindřichův Hradec", "Písek", "Prachatice", "Strakonice", "Tábor", "Brno-město", "Brno-venkov", "Blansko", "Břeclav", "Hodonín", "Vyškov", "Znojmo", "Karlovy Vary", "Sokolov", "Cheb", "Jihlava", "Havlíčkův Brod", "Pelhřimov", "Třebíč", "Žďár nad Sázavou", "Hradec Králové", "Jičín", "Náchod", "Rychnov nad Kněžnou", "Trutnov", "Česká Lípa", "Jablonec nad Nisou", "Liberec", "Semily", "Bruntál", "Opava", "Nový Jičín", "Ostrava-město", "Karviná", "Frýdek-Místek", "Olomouc", "Prostějov", "Přerov", "Šumperk", "Jeseník", "Pardubice", "Chrudim", "Svitavy", "Ústí nad Orlicí", "Tachov", "Plzeň-sever", "Plzeň-město", "Rokycany", "Plzeň-jih", "Domažlice", "Klatovy", "Praha", "Rakovník", "Kladno", "Mělník", "Mladá Boleslav", "Nymburk", "Kolín", "Kutná Hora", "Benešov", "Příbram", "Beroun", "Praha-západ", "Praha-východ", "Děčín", "Chomutov", "Most", "Litoměřice", "Louny", "Teplice", "Ústí nad Labem", "Kroměříž", "Uherské Hradiště", "Vsetín", "Zlín"];
 
 // čtení dat ze souboru
 const rawData = fs.readFileSync('old-data.json');
