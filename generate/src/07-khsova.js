@@ -364,7 +364,7 @@ module.exports = new Promise((resolve, reject) => {
   (async () => {
     const OCRfilePath = "out/07-khsova-ocr.png";
 
-    const checkFileExists = true;
+    const checkFileExists = false;
 
     // někdy se stránka khsova nedá načíst pod méně než 30s,
     // je tedy dobré manuálně stáhnout slider a vložit ho do složky out
