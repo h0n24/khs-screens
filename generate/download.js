@@ -155,9 +155,10 @@ Promise.all(promisesList).then(function (results) {
 
 // todo ------------------------------------------------------------------------
 
+// 1) Evidovat, ve kterou hodinu se mění
+
 // zlín - detekovat automaticky x/y pozice grafu
 
-// dopočítat některá data z oficiální API
 // + automatizovat verifikaci listů -> pokud sedí, rozřadit
 
 // big puppeteer refactor:

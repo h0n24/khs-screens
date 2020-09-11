@@ -13,25 +13,37 @@ const report = require('./_report');
 const khs = "10-khsplzen";
 
 // --- globální proměnné -------------------------------------------------------
+const ofr = 45+2; // offset right
+const oft = 31+2; // offset top
 const OCRpozice = {
-  "1-c": [116, 282, 55, 36],
-  "1-h": [172, 282, 55, 36],
-  "1-d": [144, 319, 55, 36],
-  "2-c": [284, 264, 55, 36],
-  "2-h": [340, 264, 55, 36],
-  "3-c": [278, 323, 60, 36],
-  "3-h": [278, 360, 60, 36],
-  "3-d": [278, 397, 60, 36],
-  "4-c": [433, 350, 55, 36],
-  "4-h": [489, 350, 55, 36],
-  "5-c": [409, 452, 55, 36],
-  "5-h": [465, 452, 55, 36],
-  "5-d": [437, 489, 55, 36],
-  "6-c": [127, 429, 60, 36],
-  "6-h": [188, 429, 59, 36],
-  "6-d": [160, 466, 55, 36],
-  "7-c": [281, 588, 61, 36],
-  "7-h": [343, 588, 55, 36]
+  "1-c": [66, 184, 45, 31], //tach
+  "1-h": [66+ofr, 184, 45, 31],
+  "1-d": [66+ofr, 184+oft, 45, 31],
+  "1-a": [66, 184+oft, 45, 31],
+  "2-c": [210, 151, 45, 31], //sev
+  "2-h": [210+ofr, 151, 45, 31],
+  "2-d": [210+ofr, 151+oft, 45, 31],
+  "2-a": [210, 151+oft, 45, 31],
+  "3-c": [163, 283, 45, 31], //měs
+  "3-h": [163+ofr, 283, 45, 31],
+  "3-d": [163+ofr, 283+oft, 45, 31],
+  "3-a": [163, 283+oft, 45, 31],
+  "4-c": [351, 184, 45, 31], //rok
+  "4-h": [351+ofr, 184, 45, 31],
+  "4-d": [351+ofr, 184+oft, 45, 31],
+  "4-a": [351, 184+oft, 45, 31],
+  "5-c": [304, 388, 45, 31], //jih
+  "5-h": [304+ofr, 388, 45, 31],
+  "5-d": [304+ofr, 388+oft, 45, 31],
+  "5-a": [304, 388+oft, 45, 31],
+  "6-c": [66, 388, 45, 31], //dom
+  "6-h": [66+ofr, 388, 45, 31],
+  "6-d": [66+ofr, 388+oft, 45, 31],
+  "6-a": [66, 388+oft, 45, 31],
+  "7-c": [210, 487, 45, 31], //kla
+  "7-h": [210+ofr, 487, 45, 31],
+  "7-d": [210+ofr, 487+oft, 45, 31],
+  "7-a": [210, 487+oft, 45, 31]
 }
 
 let OCRurl = [];
@@ -245,23 +257,32 @@ function generateOCRjson() {
           const OCRokresData = OCRjson[position + 1];
 
           let pozitivni = null;
-          if (OCRokresData.c) {
-            pozitivni = OCRokresData.c;
+          if (OCRokresData.c !== null) {
+            pozitivni = parseInt(OCRokresData.c, 10);
           }
 
           let vyleceni = null;
-          if (OCRokresData.h) {
-            vyleceni = OCRokresData.h;
+          if (OCRokresData.h !== null) {
+            vyleceni = parseInt(OCRokresData.h, 10);
           }
 
           let umrti = null;
-          if (OCRokresData.d) {
-            umrti = OCRokresData.d;
+          if (OCRokresData.d !== null) {
+            umrti = parseInt(OCRokresData.d, 10);
           }
 
           let aktivni = null;
+          if (OCRokresData.a !== null) {
+            aktivni = parseInt(OCRokresData.a, 10);
+          }
+
+          let testAktivni = null;
           if (pozitivni && vyleceni && umrti) {
-            aktivni = pozitivni - vyleceni - umrti;
+            testAktivni = pozitivni - vyleceni - umrti;
+
+            if (testAktivni !== aktivni) {
+              report(khs, "Nesedí křížový test pro aktivní");
+            }
           }
 
           const obyvatel = obyvatelstvo[okres];

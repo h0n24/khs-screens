@@ -25,7 +25,7 @@ module.exports = new Promise((resolve, reject) => {
       path: 'out/05-khshk.png',
       clip: {
         x: 220,
-        y: 375,
+        y: 575,
         width: 710,
         height: 780
       }

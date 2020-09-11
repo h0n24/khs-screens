@@ -36,17 +36,17 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal, pdfPage) {
 
   // přeskakuje se vše co není na hlavní stránce
   // a vše, co je níže než 25 na ose Y
-  if (pdfPage === 1 && item.y < 25) {
+  if (pdfPage === 1 && item.y < 16) {
     if (item.text === "19 v LK") {
       // původní lámaná verze
     } else if (item.text === "-") {
       // původní lámaná verze
     } else if (item.text.includes("Onemocnění")) {
       // celá verze
-    } else if (item.text.includes("Aktualizace ")) {
+    } else if (item.text.includes("Aktualizace")) {
       // nově: aktualizace
-    } else if (item.text === "Počty případů, aktivních případů, uzdravených osob dle okresů") {
-      // eliminace nadpisu
+    } else if (item.text.includes("případů,")) {
+      // eliminace nadpisu, furt se mění
     } else if (item.text.includes("Lípa")) {
       addOnlyUnique("Česká Lípa", pdfDataOkresy);
   
@@ -59,7 +59,7 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal, pdfPage) {
     } else if (item.text.includes("Semily")) {
       addOnlyUnique("Semily", pdfDataOkresy);
   
-    } else if (item.text.includes('počet případů onemocnění')) {
+    } else if (item.text.includes('onemocnění')) { // počet případů onemocnění
 
       const tempData = pdfData.slice(0, 4);
       pdfFinal.push({
@@ -67,7 +67,7 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal, pdfPage) {
       });
       pdfData.splice(0, 4);
   
-    } else if (item.text.includes('aktivních případů dle')) {
+    } else if (item.text.includes('aktivních')) { // aktivních případů dle
   
       const tempData = pdfData.slice(0, 4);
       pdfFinal.push({
@@ -75,7 +75,7 @@ function parsePDFitem(item, pdfData, pdfDataOkresy, pdfFinal, pdfPage) {
       });
       pdfData.splice(0, 4);
   
-    } else if (item.text.includes('uzdravených osob dle')) {
+    } else if (item.text.includes('uzdravených')) { // uzdravených osob dle
   
       const tempData = pdfData.slice(0, 4);
       pdfFinal.push({

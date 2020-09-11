@@ -71,9 +71,9 @@ module.exports = new Promise((resolve, reject) => {
 
               const okres = "Praha";
               const pozitivni = prepareNumber(tds[0].innerText);
-              const vyleceni = prepareNumber(tds[3].innerText);
-              const umrti = prepareNumber(tds[4].innerText);
-              const aktivni = pozitivni - vyleceni - umrti;
+              const vyleceni = prepareNumber(tds[4].innerText);
+              const umrti = prepareNumber(tds[5].innerText);
+              const aktivni = prepareNumber(tds[2].innerText);
               const obyvatel = 1324277; // celá Praha
 
               preparedArray.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);

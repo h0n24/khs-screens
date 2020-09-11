@@ -33,7 +33,8 @@ module.exports = new Promise((resolve, reject) => {
         // možné modifikace odkazů:
         // Aktuální epid. situace v Jihomoravském kraji - COVID-19
         // Aktuální epidemiologická situace v Jihomoravském kraji - COVID-19
-        if (link.innerHTML.includes('situace v Jihomoravském kraji - COVID-19')) {
+        // COVID-19, Jihomoravský kraj
+        if (link.innerHTML.includes('COVID-19')) {
           return link.href;
         }
       }
@@ -58,34 +59,43 @@ module.exports = new Promise((resolve, reject) => {
       let osaX = [];
       let pdfData = new Array(7);
       let pdfDataTime = "";
+      let unique = [true, true, true, true, true, true, true];
 
       function pdfParsePrepareYAxis(item) {
+
+        function findOnlyUniqueRow(id) {
+          if (unique[id] !== false) {
+            okresY[id] = item.y;
+          }
+          unique[id] = false;
+        }
+
         if (item.text === "Brno-město") {
-          okresY[0] = item.y;
+          findOnlyUniqueRow(0);
         }
 
         if (item.text === "Brno-venkov") {
-          okresY[1] = item.y;
+          findOnlyUniqueRow(1);
         }
 
         if (item.text === "Blansko") {
-          okresY[2] = item.y;
+          findOnlyUniqueRow(2);
         }
 
         if (item.text === "Břeclav") {
-          okresY[3] = item.y;
+          findOnlyUniqueRow(3);
         }
 
         if (item.text === "Hodonín") {
-          okresY[4] = item.y;
+          findOnlyUniqueRow(4);
         }
 
         if (item.text === "Vyškov") {
-          okresY[5] = item.y;
+          findOnlyUniqueRow(5);
         }
 
         if (item.text === "Znojmo") {
-          okresY[6] = item.y;
+          findOnlyUniqueRow(6);
         }
       }
 
@@ -160,7 +170,7 @@ module.exports = new Promise((resolve, reject) => {
           }
 
           let aktivni = null;
-          if (rowData[rowData.length - 1][0] === 5) {
+          if (rowData[rowData.length - 1][0] === 6) {
             aktivni = clean.number(rowData[rowData.length - 1][1]);
           }
 
@@ -173,8 +183,8 @@ module.exports = new Promise((resolve, reject) => {
 
         // zpracování času
         // je třeba vyhledat v celém textu (pozice x,y se mění)
-        let [tempTime,] = pdfDataTime.split("Přehled situace");
-        [,tempTime] = tempTime.split("EPIDEMIOLOGICKÁ SITUACE");
+        let [,tempTime] = pdfDataTime.split("Přehled situace");
+        [tempTime,] = tempTime.split("Kumulativní počty");
 
         // ukázka dat:
         // vJihomoravském krajize dne 14. srpna 2020, 17:00 hod.
