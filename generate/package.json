@@ -6,9 +6,9 @@
       "express": "^4.17.1",
       "googleapis": "^39.2.0",
       "pdfreader": "^1.0.7",
-      "puppeteer": "^5.2.1",
+      "puppeteer": "^5.3.0",
       "sharp": "^0.25.4",
-      "tesseract.js": "^2.1.1"
+      "tesseract.js": "^2.1.2"
    },
    "repository": {
       "type": "git",
