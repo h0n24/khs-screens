@@ -140,3 +140,11 @@ module.exports = new Promise((resolve, reject) => {
     resolve();
   })();
 });
+
+// TODO: idea - check arcgis
+
+// time: layers -> editingInfo -> lastEditDate (UNIX format)
+// https://services6.arcgis.com/HcHP4DkECF4PdslC/ArcGIS/rest/services/Po%c4%8dty_onemocn%c4%9bn%c3%ad_COVID19_za_MOP/FeatureServer/layers?f=pjson
+
+// data: features -> attributes -> PocetNakazenych
+// https://services6.arcgis.com/HcHP4DkECF4PdslC/ArcGIS/rest/services/Po%C4%8Dty_onemocn%C4%9Bn%C3%AD_COVID19_za_MOP/FeatureServer/0/query?where=1%3D1

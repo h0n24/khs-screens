@@ -14,24 +14,18 @@ const report = require('./_report');
 const khs = "07-khsova";
 
 const OCRpozice = {
-  "1-t": [267, 109, 30, 12],
-  "1-k": [267, 122, 30, 12],
-  "1-h": [267, 135, 30, 12],
-  "2-t": [347, 153, 30, 12],
-  "2-k": [347, 165, 30, 12],
-  "2-h": [347, 179, 30, 12],
-  "3-t": [381, 221, 30, 12],
-  "3-k": [381, 233, 30, 12],
-  "3-h": [381, 245, 30, 12],
-  "4-t": [439, 180, 30, 12],
-  "4-k": [439, 192, 30, 12],
-  "4-h": [439, 204, 30, 12],
-  "5-t": [484, 174, 30, 12],
-  "5-k": [484, 186, 30, 12],
-  "5-h": [484, 198, 30, 12],
-  "6-t": [467, 253, 30, 12],
-  "6-k": [467, 266, 30, 12],
-  "6-h": [467, 279, 30, 12]
+// Bruntál
+  "1-a": [267, 110, 30, 12],
+// Opava
+  "2-a": [347, 154, 30, 12],
+// Nový Jičín
+  "3-a": [381, 221, 30, 12],
+// Ostrava
+  "4-a": [439, 183, 30, 12],
+// Karviná
+  "5-a": [484, 177, 30, 12],
+// Frýdek-Místek
+  "6-a": [467, 253, 30, 12]
 }
 
 const OCRpoziceDatum = [704, 40, 84, 15];
@@ -294,21 +288,13 @@ function generateOCRjson() {
       const OCRokresData = OCRjson[position + 1];
 
       let pozitivni = null;
-      if (OCRokresData.k && OCRokresData.t) {
-        const komunitni = parseInt(OCRokresData.k, 10);
-        const cestovatelska = parseInt(OCRokresData.t, 10);
-        pozitivni = komunitni + cestovatelska;
-
-        // console.log(`${OCRokresData}: k:${komunitni} c:${cestovatelska} poz:${pozitivni}`);
-      }
-
       let vyleceni = null;
-      if (OCRokresData.h) {
-        vyleceni = OCRokresData.h;
-      }
-
       let umrti = null;
       let aktivni = null;
+
+      if (OCRokresData.a) {
+        aktivni = OCRokresData.a;
+      }
 
       const obyvatel = obyvatelstvo[okres];
 

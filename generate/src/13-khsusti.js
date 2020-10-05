@@ -36,10 +36,11 @@ module.exports = new Promise((resolve, reject) => {
       function pdfDecode(pdfDataAsText) {
 
         // očištění samotných dat ----------------------------------------------
+
         // rozdělení 
-        let subStringDataZprava = pdfDataAsText.split("//D//ěč//ín");
+        let subStringDataZprava = pdfDataAsText.split("//Děčín");
         [,subStringDataZprava] = subStringDataZprava;
-        let subStringDataZleva = subStringDataZprava.split("//CELKEM //");
+        let subStringDataZleva = subStringDataZprava.split("//Celkem //");
         [subStringDataZleva,] = subStringDataZleva;
 
         let stringTabulka = subStringDataZleva;
@@ -127,9 +128,9 @@ module.exports = new Promise((resolve, reject) => {
           const rowData = pdfData[index];
           const okres = rowData[0].trim();
           const pozitivni = clean.number(rowData[1]);
-          const vyleceni = clean.number(rowData[2]);
-          const aktivni = clean.number(rowData[3]);
-          const umrti = clean.number(rowData[4]);
+          const vyleceni = clean.number(rowData[3]);
+          const aktivni = clean.number(rowData[4]);
+          const umrti = clean.number(rowData[5]);
           const obyvatel = obyvatelstvo[okres];
 
           // console.log([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);

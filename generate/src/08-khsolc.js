@@ -13,7 +13,7 @@ module.exports = new Promise((resolve, reject) => {
     // přístup na stránku
     await page.setViewport({
       width: 900,
-      height: 600
+      height: 1200
     });
     await page.goto('http://www.khsolc.cz/info_verejnost.aspx', {
       waitUntil: 'networkidle2'
@@ -26,6 +26,7 @@ module.exports = new Promise((resolve, reject) => {
       const content = `
         #hlavnipanel-obsah {
           background: #FFF !important;
+          height: auto !important;
         }
         img[src="images/logo_graf.png"] {
           display: none !important;
@@ -47,7 +48,7 @@ module.exports = new Promise((resolve, reject) => {
         x: 210,
         y: 140,
         width: 680,
-        height: 450
+        height: 590
       }
     });
 
@@ -59,7 +60,8 @@ module.exports = new Promise((resolve, reject) => {
       let preparedArray = [];
       preparedArray[0] = [];
       preparedArray[1] = [];
-
+      preparedArray[2] = [];
+      preparedArray[3] = [];
 
       function prepareNumber(string) {
         let preparedNumber = string.replace(/[^0-9]/g, '');
@@ -95,12 +97,28 @@ module.exports = new Promise((resolve, reject) => {
                   preparedArray[0].push([okres, cislo]);
                 }
 
-                if (dataKategorie.includes('Počet vyléčených osob v jednotlivých okresech')) {
+                if (dataKategorie.includes('Počet aktuálně pozitivních případů v jednotlivých okresech')) {
+                  let okres = tds[1].innerText;
+                  okres = okres.replace('Okres', '').trim();
+
+                  const cislo = prepareNumber(tds[2].innerText);
+                  preparedArray[2].push([okres, cislo]);
+                }
+
+                if (dataKategorie.includes('Počet uzdravených osob v jednotlivých okresech')) {
                   let okres = tds[1].innerText;
                   okres = okres.replace('Okres', '').trim();
 
                   const cislo = prepareNumber(tds[2].innerText);
                   preparedArray[1].push([okres, cislo]);
+                }
+
+                if (dataKategorie.includes('Počet zemřelých osob v jednotlivých okresech')) {
+                  let okres = tds[1].innerText;
+                  okres = okres.replace('Okres', '').trim();
+
+                  const cislo = prepareNumber(tds[2].innerText);
+                  preparedArray[3].push([okres, cislo]);
                 }
 
               } catch (error) {
@@ -141,8 +159,8 @@ module.exports = new Promise((resolve, reject) => {
 
         const pozitivni = crawledData[0][position][1];
         const vyleceni = crawledData[1][position][1];
-        const umrti = null
-        const aktivni = null
+        const umrti = crawledData[3][position][1];
+        const aktivni = crawledData[2][position][1];
         const obyvatel = obyvatelstvo[okres];
 
         preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
