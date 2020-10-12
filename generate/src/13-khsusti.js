@@ -38,12 +38,26 @@ module.exports = new Promise((resolve, reject) => {
         // očištění samotných dat ----------------------------------------------
 
         // rozdělení 
-        let subStringDataZprava = pdfDataAsText.split("//Děčín");
-        [,subStringDataZprava] = subStringDataZprava;
-        let subStringDataZleva = subStringDataZprava.split("//Celkem //");
-        [subStringDataZleva,] = subStringDataZleva;
+        let pdfDataSubstring = pdfDataAsText;
 
-        let stringTabulka = subStringDataZleva;
+        // ořez zleva
+        if (pdfDataSubstring.includes("//Děčín")) {
+          [,pdfDataSubstring] = pdfDataSubstring.split("//Děčín");
+        }
+        
+        if (pdfDataSubstring.includes("//D//ěč//ín")) {
+          [,pdfDataSubstring] = pdfDataSubstring.split("//D//ěč//ín");
+        }
+
+        // ořez zprava
+        if (pdfDataSubstring.includes("//Celkem //")) {
+          [pdfDataSubstring,] = pdfDataSubstring.split("//Celkem //");
+        }
+        if (pdfDataSubstring.includes("//CELKEM //")) {
+          [pdfDataSubstring,] = pdfDataSubstring.split("//CELKEM //");
+        }
+
+        let stringTabulka = pdfDataSubstring;
 
         // oprava měst ---------
         // odstraněný Děčín
@@ -127,7 +141,7 @@ module.exports = new Promise((resolve, reject) => {
         for (let index = 0; index < pdfData.length; index++) {
           const rowData = pdfData[index];
           const okres = rowData[0].trim();
-          const pozitivni = clean.number(rowData[1]);
+          const pozitivni = clean.number(rowData[2]);
           const vyleceni = clean.number(rowData[3]);
           const aktivni = clean.number(rowData[4]);
           const umrti = clean.number(rowData[5]);
