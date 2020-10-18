@@ -136,20 +136,27 @@ module.exports = new Promise((resolve, reject) => {
 
         pdfDecode(pdfDataAsText);
 
+        // push data based on the given position
         let preparedData = [];
-
-        for (let index = 0; index < pdfData.length; index++) {
-          const rowData = pdfData[index];
-          const okres = rowData[0].trim();
-          const pozitivni = clean.number(rowData[2]);
-          const vyleceni = clean.number(rowData[3]);
-          const aktivni = clean.number(rowData[4]);
-          const umrti = clean.number(rowData[5]);
-          const obyvatel = obyvatelstvo[okres];
-
-          // console.log([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
-          preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
+        for (const okresKey in obyvatelstvo) {
+          if (obyvatelstvo.hasOwnProperty(okresKey)) {
+            for (let index = 0; index < pdfData.length; index++) {
+              const rowData = pdfData[index];
+              const okres = rowData[0].trim();
+              const pozitivni = clean.number(rowData[2]);
+              const vyleceni = clean.number(rowData[3]);
+              const aktivni = clean.number(rowData[4]);
+              const umrti = clean.number(rowData[5]);
+              const obyvatel = obyvatelstvo[okres];
+              
+              if (okresKey === okres) {
+                // console.log([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
+                preparedData.push([okres, pozitivni, vyleceni, umrti, aktivni, obyvatel]);
+              }
+            }
+          }
         }
+
 
         save('out/data.json', {
           "13": preparedData
