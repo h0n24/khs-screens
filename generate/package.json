@@ -3,7 +3,7 @@
    "description": "Repository works as a crawler for all Czech regional hygienic station's daily data about COVID-19 illness with an additional screenshot generator used as a backup.",
    "version": "1.0.0",
    "dependencies": {
-      "express": "^4.17.1",
+      "express": "^4.17.3",
       "googleapis": "^39.2.0",
       "pdfreader": "^1.2.6",
       "puppeteer": "^5.3.1",
